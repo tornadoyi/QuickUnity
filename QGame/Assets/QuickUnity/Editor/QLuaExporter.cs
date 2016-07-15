@@ -11,111 +11,110 @@ namespace QuickUnity
     {
         public static void OnAddCustomClass(LuaCodeGen.ExportGenericDelegate add)
         {
-            string ns = "QuickUnity";
             // System
             add(typeof(Enum), null);
 
             // Event
-            add(typeof(EngineEvent), ns);
-            add(typeof(EventManager), ns);
-            add(typeof(EventTrigger), ns);
-            add(typeof(UGUIEventTrigger), ns);
+            add(typeof(EngineEvent), null);
+            add(typeof(EventManager), null);
+            add(typeof(EventTrigger), null);
+            add(typeof(UGUIEventTrigger), null);
 
 
             // Quick Manager
-            add(typeof(QuickManager), ns);
+            add(typeof(QuickManager), null);
 
             // Lua
-            add(typeof(LuaEngine), ns);
-            add(typeof(QList), ns);
-            add(typeof(QDictionary), ns);
-			add(typeof(QBytes), ns);
+            add(typeof(LuaEngine), null);
+            add(typeof(QList), null);
+            add(typeof(QDictionary), null);
+			add(typeof(QBytes), null);
             
             // Base
-            add(typeof(SymbolManager), ns);
-            add(typeof(QuickBehaviour), ns);
+            add(typeof(SymbolManager), null);
+            add(typeof(QuickBehaviour), null);
 
 
             // File
-            add(typeof(FileManager), ns);
-            add(typeof(UserDefault), ns);
+            add(typeof(FileManager), null);
+            add(typeof(UserDefault), null);
 
             // Action
-            add(typeof(Action), ns);
-            add(typeof(Action.ActionBase), ns);
-            add(typeof(Action.FiniteAction), ns);
-            add(typeof(Action.IntervalAction), ns);
-            add(typeof(Action.CallFunc), ns);
-            add(typeof(Action.Sequence), ns);
-            add(typeof(Action.Spawn), ns);
-            add(typeof(Action.Delay), ns);
-            add(typeof(Action.Repeat), ns);
-            add(typeof(Action.MoveBy), ns);
-            add(typeof(Action.MoveTo), ns);
-            add(typeof(Action.RotateBy), ns);
-            add(typeof(Action.RotateTo), ns);
-            add(typeof(Action.RotateAround), ns);
-            add(typeof(Action.ScaleBy), ns);
-            add(typeof(Action.ScaleTo), ns);
-            add(typeof(Action.Blink), ns);
-            add(typeof(Action.ColorBy), ns);
-            add(typeof(Action.ColorTo), ns);
-            add(typeof(Action.FadeTo), ns);
-            add(typeof(Action.FadeIn), ns);
-            add(typeof(Action.FadeOut), ns);
-            add(typeof(Action.Shake), ns);
+            add(typeof(Action), null);
+            add(typeof(Action.ActionBase), null);
+            add(typeof(Action.FiniteAction), null);
+            add(typeof(Action.IntervalAction), null);
+            add(typeof(Action.CallFunc), null);
+            add(typeof(Action.Sequence), null);
+            add(typeof(Action.Spawn), null);
+            add(typeof(Action.Delay), null);
+            add(typeof(Action.Repeat), null);
+            add(typeof(Action.MoveBy), null);
+            add(typeof(Action.MoveTo), null);
+            add(typeof(Action.RotateBy), null);
+            add(typeof(Action.RotateTo), null);
+            add(typeof(Action.RotateAround), null);
+            add(typeof(Action.ScaleBy), null);
+            add(typeof(Action.ScaleTo), null);
+            add(typeof(Action.Blink), null);
+            add(typeof(Action.ColorBy), null);
+            add(typeof(Action.ColorTo), null);
+            add(typeof(Action.FadeTo), null);
+            add(typeof(Action.FadeIn), null);
+            add(typeof(Action.FadeOut), null);
+            add(typeof(Action.Shake), null);
 
             // Task
-            add(typeof(Task), ns);
-            add(typeof(CoroutineTask), ns);
-            add(typeof(AsyncTask), ns);
-            add(typeof(WWWTask), ns);
-            add(typeof(WWWReadBytesTask), ns);
-            add(typeof(WWWReadTextTask), ns);
-            add(typeof(WWWRequest), ns);
-            add(typeof(HttpDownloadTask), ns);
+            add(typeof(Task), null);
+            add(typeof(CoroutineTask), null);
+            add(typeof(AsyncTask), null);
+            add(typeof(WWWTask), null);
+            add(typeof(WWWReadBytesTask), null);
+            add(typeof(WWWReadTextTask), null);
+            add(typeof(WWWRequest), null);
+            add(typeof(HttpDownloadTask), null);
 
             // UI
-            add(typeof(SymbolWidget), ns);
-            add(typeof(SymbolImage), ns);
-            add(typeof(SymbolText), ns);
+            add(typeof(SymbolWidget), null);
+            add(typeof(SymbolImage), null);
+            add(typeof(SymbolText), null);
 
             // Lua
-            add(typeof(QLuaUtility), ns);
-            add(typeof(LuaComponentType), ns);
-            add(typeof(LuaComponent), ns);
-            add(typeof(LuaComponent_Update), ns);
-            add(typeof(LuaComponent_LateUpdate), ns);
-            add(typeof(LuaComponent_FixedUpdate), ns);
-            add(typeof(LuaComponent_Update_Late), ns);
-            add(typeof(LuaComponent_Update_Fixed), ns);
-            add(typeof(LuaComponent_Late_Fixed), ns);
-            add(typeof(LuaComponent_Update_Late_Fixed), ns);
-            add(typeof(SafeLuaCoroutine), ns);
-            add(typeof(CustomTask), ns);
+            add(typeof(QLuaUtility), null);
+            add(typeof(LuaComponentType), null);
+            add(typeof(LuaComponent), null);
+            add(typeof(LuaComponent_Update), null);
+            add(typeof(LuaComponent_LateUpdate), null);
+            add(typeof(LuaComponent_FixedUpdate), null);
+            add(typeof(LuaComponent_Update_Late), null);
+            add(typeof(LuaComponent_Update_Fixed), null);
+            add(typeof(LuaComponent_Late_Fixed), null);
+            add(typeof(LuaComponent_Update_Late_Fixed), null);
+            add(typeof(SafeLuaCoroutine), null);
+            add(typeof(CustomTask), null);
 
             // AssetManager
-            add(typeof(AssetManager), ns);
-            add(typeof(AssetManager.DownloadAssetBundleTask), ns);
-            add(typeof(AssetManager.LoadAssetBundleTask), ns);
-            add(typeof(AssetManager.LoadAssetTask), ns);
-            add(typeof(AssetUnloadLevel), ns);
+            add(typeof(AssetManager), null);
+            add(typeof(AssetManager.DownloadAssetBundleTask), null);
+            add(typeof(AssetManager.LoadAssetBundleTask), null);
+            add(typeof(AssetManager.LoadAssetTask), null);
+            add(typeof(AssetUnloadLevel), null);
 
 
-            add(typeof(AssetManager.LoadSpecifyAssetTask), ns);
-            add(typeof(AssetManager.LoadFontTask), ns);
-            add(typeof(AssetManager.LoadSpriteTask), ns);
-            add(typeof(AssetManager.LoadTextureTask), ns);
-            add(typeof(AssetManager.LoadTextTask), ns);
-            add(typeof(AssetManager.LoadBinaryTask), ns);
+            add(typeof(AssetManager.LoadSpecifyAssetTask), null);
+            add(typeof(AssetManager.LoadFontTask), null);
+            add(typeof(AssetManager.LoadSpriteTask), null);
+            add(typeof(AssetManager.LoadTextureTask), null);
+            add(typeof(AssetManager.LoadTextTask), null);
+            add(typeof(AssetManager.LoadBinaryTask), null);
 
             // HttpManager
-            add(typeof(HttpManager), ns);
+            add(typeof(HttpManager), null);
 
             // Network
-            add(typeof(SocketBase), ns);
-            add(typeof(SocketClient), ns);
-            add(typeof(SocketManager), ns);
+            add(typeof(SocketBase), null);
+            add(typeof(SocketClient), null);
+            add(typeof(SocketManager), null);
             
         }
 

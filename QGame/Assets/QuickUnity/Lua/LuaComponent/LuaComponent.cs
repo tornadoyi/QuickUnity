@@ -91,7 +91,7 @@ namespace QuickUnity
         {
             // Instantiate lua class
             string fname = string.Format("{0}.{1}", luaClassName, QConfig.Lua.instanceFunctionName);
-            LuaFunction creator = (LuaFunction)LuaEngine.GetLuaObject(fname);
+            LuaFunction creator = (LuaFunction)LuaEngine.GetGlobalObject(fname);
             if (creator == null) { Debug.LogError(string.Format("Can not init {0}", luaClassName)); return; }
             _self = (LuaTable)creator.call(this);
             if (_self == null) { Debug.LogError(string.Format("Can not init {0}", luaClassName)); return; }

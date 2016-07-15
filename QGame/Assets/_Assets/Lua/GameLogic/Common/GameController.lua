@@ -1,0 +1,5 @@
+
+
+GameController = class("GameController", LuaBehaviour)
+
+
