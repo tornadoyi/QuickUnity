@@ -7,50 +7,15 @@ using SLua;
 
 public class Setting : Singleton<Setting>
 {
-    [DoNotToLua]
-    public static bool Load()
+    public enum AssetBundleLevel
     {
-        var textAsset = (TextAsset)Resources.Load(settingFilePath);
-        if (textAsset == null)
-        {
-            Debug.LogErrorFormat("Load setting file {0} failed", settingFilePath);
-            return false;
-        }
-        var content = textAsset.text;
-        Resources.UnloadAsset(textAsset);
-
-        var yaml = new Yaml(content);
-        instance._loginServerUrl = yaml.GetString("login_server_url");
-        instance._cdnUrl = FileManager.PathCombine(yaml.GetString("cdn_url"), platformName);
-        instance._appVersion = yaml.GetString("app_version");
-        instance._assetBundleLevel = (AssetBundleLevel)yaml.GetInt("asset_bundle_level");
-        instance._defaultLanguage = (SystemLanguage)Enum.Parse(typeof(SystemLanguage), yaml.GetString("defualt_language"));
-        var languageList = yaml.GetString("support_language").Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
-        for(int i=0; i<languageList.Length; ++i)
-        {
-            var language = (SystemLanguage)Enum.Parse(typeof(SystemLanguage), languageList[i]);
-            instance._supportLanguageList.Add(language);
-        }
-        
-        return true;
+        None = 0,
+        Asset = 1,
+        Lua = 2,
+        All = Asset | Lua,
     }
 
-    public static string GetDebugInfo()
-    {
-        var builder = new System.Text.StringBuilder();
-        builder.AppendLine("========== Setting ==========");
-        builder.AppendFormat("builtInAssetPath: {0}\n", builtInAssetPath);
-        builder.AppendFormat("downloadCachePath: {0}\n", downloadCachePath);
-        builder.AppendFormat("settingFilePath: {0}\n", settingFilePath);
-        builder.AppendFormat("localVersionFilePath: {0}\n", localVersionFilePath);
-        builder.AppendFormat("latestVersionFileUrl: {0}\n", latestVersionFileUrl);
-        builder.AppendFormat("loginServerUrl: {0}\n", loginServerUrl);
-        builder.AppendFormat("cdnUrl: {0}\n", cdnUrl);
-        builder.AppendFormat("appVersion: {0}\n", appVersion);
-        builder.AppendLine("=============================");
-        return builder.ToString();
-    }
-
+    
     /// <summary>
     /// Basic config
     /// </summary>
@@ -64,7 +29,7 @@ public class Setting : Singleton<Setting>
     /// <summary>
     /// All static config
     /// </summary>
-    public static readonly string builtInAssetPath = Application.streamingAssetsPath;
+    public static readonly string streamingAssetsAssetPath = Application.streamingAssetsPath;
 
     public static readonly string downloadCachePath = FileManager.PathCombine(Application.persistentDataPath, platformName);
 
@@ -78,9 +43,9 @@ public class Setting : Singleton<Setting>
 
     public static string languageFilePath = "Setting/Language";
 
-    public static readonly string builtInAssetTableFilePath = FileManager.PathCombine(builtInAssetPath, assetTableFileName);
+    public static readonly string streamingAssetsTableFilePath = FileManager.PathCombine(streamingAssetsAssetPath, assetTableFileName);
 
-    public static readonly string externalAssetTableFilePath = FileManager.PathCombine(downloadCachePath, assetTableFileName);
+    public static readonly string serverTableFilePath = FileManager.PathCombine(downloadCachePath, assetTableFileName);
 
     public static readonly string luaAssetBundleName = "Lua";
 
@@ -106,23 +71,12 @@ public class Setting : Singleton<Setting>
     /// <summary>
     /// Load from setting file below
     /// </summary>
-    public static string loginServerUrl { get { return instance._loginServerUrl; } }
-    protected string _loginServerUrl = string.Empty;
-
-    public static string cdnUrl { get { return instance._cdnUrl; } }
-    protected string _cdnUrl = string.Empty;
-
-    public static string appVersion { get { return instance._appVersion; } }
-    protected string _appVersion = string.Empty;
-
-    public static AssetBundleLevel assetBundleLevel { get { return instance._assetBundleLevel; } }
-    protected AssetBundleLevel _assetBundleLevel = AssetBundleLevel.All;
-
-    public static SystemLanguage defaultLanguage { get { return instance._defaultLanguage; } }
-    protected SystemLanguage _defaultLanguage;
-
-    public static List<SystemLanguage> supportLanguageList { get { return instance._supportLanguageList; } }
-    protected List<SystemLanguage> _supportLanguageList = new List<SystemLanguage>();
+    public static string loginServerUrl { get; private set;}
+    public static string cdnUrl { get; private set;}
+    public static string appVersion { get; private set;}
+    public static AssetBundleLevel assetBundleLevel { get; private set;}
+    public static SystemLanguage defaultLanguage { get; private set;}
+    public static List<SystemLanguage> supportLanguageList { get; private set;}
 
 
     public static bool loadLuaFromAssetBundle
@@ -137,10 +91,50 @@ public class Setting : Singleton<Setting>
         }
     }
 
-    public enum AssetBundleLevel
+
+    [DoNotToLua]
+    public static bool Load()
     {
-        All = 0,
-        AssetWithoutLua = 1,
-        None = 2,
+        var textAsset = (TextAsset)Resources.Load(settingFilePath);
+        if (textAsset == null)
+        {
+            Debug.LogErrorFormat("Load setting file {0} failed", settingFilePath);
+            return false;
+        }
+        var content = textAsset.text;
+        Resources.UnloadAsset(textAsset);
+
+        var yaml = new Yaml(content);
+        loginServerUrl = yaml.GetString("login_server_url");
+        cdnUrl = FileManager.PathCombine(yaml.GetString("cdn_url"), platformName);
+        appVersion = yaml.GetString("app_version");
+        assetBundleLevel = (AssetBundleLevel)yaml.GetInt("asset_bundle_level");
+        defaultLanguage = (SystemLanguage)Enum.Parse(typeof(SystemLanguage), yaml.GetString("defualt_language"));
+        var languageList = yaml.GetString("support_language").Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+        supportLanguageList = new List<SystemLanguage>();
+        for(int i=0; i<languageList.Length; ++i)
+        {
+            var language = (SystemLanguage)Enum.Parse(typeof(SystemLanguage), languageList[i]);
+            supportLanguageList.Add(language);
+        }
+
+        return true;
     }
+
+    public static string GetDebugInfo()
+    {
+        var builder = new System.Text.StringBuilder();
+        builder.AppendLine("========== Setting ==========");
+        builder.AppendFormat("builtInAssetPath: {0}\n", streamingAssetsAssetPath);
+        builder.AppendFormat("downloadCachePath: {0}\n", downloadCachePath);
+        builder.AppendFormat("settingFilePath: {0}\n", settingFilePath);
+        builder.AppendFormat("localVersionFilePath: {0}\n", localVersionFilePath);
+        builder.AppendFormat("latestVersionFileUrl: {0}\n", latestVersionFileUrl);
+        builder.AppendFormat("loginServerUrl: {0}\n", loginServerUrl);
+        builder.AppendFormat("cdnUrl: {0}\n", cdnUrl);
+        builder.AppendFormat("appVersion: {0}\n", appVersion);
+        builder.AppendLine("=============================");
+        return builder.ToString();
+    }
+
 }

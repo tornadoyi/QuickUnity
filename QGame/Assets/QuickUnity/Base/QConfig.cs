@@ -38,11 +38,7 @@ namespace QuickUnity
             // Use www or http to download
             public static DownloadMode donwloadMode = DownloadMode.HTTP;
         }
-
-        public class Path
-        {
-           
-        }
+            
 
         public class Asset
         {
