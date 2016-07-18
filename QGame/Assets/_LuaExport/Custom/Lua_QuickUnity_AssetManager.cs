@@ -18,7 +18,7 @@ public class Lua_QuickUnity_AssetManager : LuaObject {
 		}
 	}
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static public int StartAsync_s(IntPtr l) {
+	static public int Start_s(IntPtr l) {
 		try {
 			System.String a1;
 			checkType(l,1,out a1);
@@ -30,7 +30,7 @@ public class Lua_QuickUnity_AssetManager : LuaObject {
 			checkType(l,4,out a4);
 			System.String a5;
 			checkType(l,5,out a5);
-			var ret=QuickUnity.AssetManager.StartAsync(a1,a2,a3,a4,a5);
+			var ret=QuickUnity.AssetManager.Start(a1,a2,a3,a4,a5);
 			pushValue(l,true);
 			pushValue(l,ret);
 			return 2;
@@ -40,11 +40,11 @@ public class Lua_QuickUnity_AssetManager : LuaObject {
 		}
 	}
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static public int DownloadAssetBundleAsync_s(IntPtr l) {
+	static public int DownloadAssetBundle_s(IntPtr l) {
 		try {
 			System.String a1;
 			checkType(l,1,out a1);
-			var ret=QuickUnity.AssetManager.DownloadAssetBundleAsync(a1);
+			var ret=QuickUnity.AssetManager.DownloadAssetBundle(a1);
 			pushValue(l,true);
 			pushValue(l,ret);
 			return 2;
@@ -54,11 +54,11 @@ public class Lua_QuickUnity_AssetManager : LuaObject {
 		}
 	}
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static public int LoadAssetBundleAsync_s(IntPtr l) {
+	static public int LoadAssetBundle_s(IntPtr l) {
 		try {
 			System.String a1;
 			checkType(l,1,out a1);
-			var ret=QuickUnity.AssetManager.LoadAssetBundleAsync(a1);
+			var ret=QuickUnity.AssetManager.LoadAssetBundle(a1);
 			pushValue(l,true);
 			pushValue(l,ret);
 			return 2;
@@ -437,10 +437,10 @@ public class Lua_QuickUnity_AssetManager : LuaObject {
 		}
 	}
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static public int get_builtinAssetPath(IntPtr l) {
+	static public int get_streamingAssetsPath(IntPtr l) {
 		try {
 			pushValue(l,true);
-			pushValue(l,QuickUnity.AssetManager.builtinAssetPath);
+			pushValue(l,QuickUnity.AssetManager.streamingAssetsPath);
 			return 2;
 		}
 		catch(Exception e) {
@@ -448,10 +448,10 @@ public class Lua_QuickUnity_AssetManager : LuaObject {
 		}
 	}
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static public int get_externalAssetPath(IntPtr l) {
+	static public int get_serverAssetPath(IntPtr l) {
 		try {
 			pushValue(l,true);
-			pushValue(l,QuickUnity.AssetManager.externalAssetPath);
+			pushValue(l,QuickUnity.AssetManager.serverAssetPath);
 			return 2;
 		}
 		catch(Exception e) {
@@ -482,9 +482,9 @@ public class Lua_QuickUnity_AssetManager : LuaObject {
 	}
 	static public void reg(IntPtr l) {
 		getTypeTable(l,"QuickUnity.AssetManager");
-		addMember(l,StartAsync_s);
-		addMember(l,DownloadAssetBundleAsync_s);
-		addMember(l,LoadAssetBundleAsync_s);
+		addMember(l,Start_s);
+		addMember(l,DownloadAssetBundle_s);
+		addMember(l,LoadAssetBundle_s);
 		addMember(l,LoadAsset_s);
 		addMember(l,LoadSubAssets_s);
 		addMember(l,LoadAssetAsync_s);
@@ -508,8 +508,8 @@ public class Lua_QuickUnity_AssetManager : LuaObject {
 		addMember(l,LoadBinaryAsync_s);
 		addMember(l,LoadGameObject_s);
 		addMember(l,LoadGameObjectAsync_s);
-		addMember(l,"builtinAssetPath",get_builtinAssetPath,null,false);
-		addMember(l,"externalAssetPath",get_externalAssetPath,null,false);
+		addMember(l,"streamingAssetsPath",get_streamingAssetsPath,null,false);
+		addMember(l,"serverAssetPath",get_serverAssetPath,null,false);
 		addMember(l,"downloadUrl",get_downloadUrl,null,false);
 		addMember(l,"init",get_init,null,false);
 		createTypeMetatable(l,constructor, typeof(QuickUnity.AssetManager),typeof(BaseManager<QuickUnity.AssetManager>));

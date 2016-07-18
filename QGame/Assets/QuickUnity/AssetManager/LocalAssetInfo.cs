@@ -11,7 +11,17 @@ namespace QuickUnity
         public override bool Load()
         {
             if (asset != null) return true;
+
+#if UNITY_EDITOR
+            if (!QConfig.Asset.loadAssetFromAssetBundle)
+            {
+                subAssets = UnityEditor.AssetDatabase.LoadAllAssetsAtPath(name);
+                asset = UnityEditor.AssetDatabase.LoadAssetAtPath(name, typeof(UnityEngine.Object));
+                return asset == null;
+            }
+#endif
             asset = Resources.Load(name);
+            subAssets = Resources.LoadAll(name);
             return asset == null;
         }
 
@@ -72,6 +82,18 @@ namespace QuickUnity
                     yield break;
                 }
 
+#if UNITY_EDITOR
+                if (!QConfig.Asset.loadAssetFromAssetBundle)
+                {
+                    subAssets = UnityEditor.AssetDatabase.LoadAllAssetsAtPath(assetInfo.name);
+                    asset = UnityEditor.AssetDatabase.LoadAssetAtPath(assetInfo.name, typeof(UnityEngine.Object));
+                    if(asset == null)
+                    {
+                        SetFail(string.Format("Can not load asset {0}", assetInfo.name));
+                    }
+                    yield break;
+                }
+#endif
                 var request = Resources.LoadAsync(assetInfo.name);
                 yield return request;
                 asset = request.asset;

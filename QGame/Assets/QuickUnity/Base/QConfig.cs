@@ -48,9 +48,9 @@ namespace QuickUnity
         {
             public enum AssetPathType
             {
-                Builtin = 0,
-                External = 1,
-                Resources = 2,
+                StreamingAssets = 0,
+                Resources = 1,
+                Server = 2,
             }
 
             public static bool loadAssetFromAssetBundle = true;

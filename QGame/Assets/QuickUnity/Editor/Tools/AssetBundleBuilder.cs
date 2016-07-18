@@ -335,7 +335,7 @@ namespace QuickUnity
                             bundle.variant = row_bundle[c++].ToString();
 
                             var loc = row_bundle[c++].ToString();
-                            bundle.location = loc == "builtin" ? QConfig.Asset.AssetPathType.Builtin : bundle.location;
+                            bundle.location = loc == "builtin" ? QConfig.Asset.AssetPathType.StreamingAssets : bundle.location;
 
                             for (int i = c; i < columns; ++i )
                             {
@@ -435,7 +435,7 @@ namespace QuickUnity
             public string name = "Default";
             public string outputRelativePath = string.Empty;
             public string variant = string.Empty;
-            public QConfig.Asset.AssetPathType location = QConfig.Asset.AssetPathType.External;
+            public QConfig.Asset.AssetPathType location = QConfig.Asset.AssetPathType.Server;
 
             public string md5 = string.Empty;
             public List<string> pathOrFile = new List<string>();
@@ -657,7 +657,7 @@ namespace QuickUnity
                     var build = pair.Value;
 
                     // Get output path for this asset bundle
-                    var outputRootPath = data.location == QConfig.Asset.AssetPathType.Builtin ? builtinOutputRootPath : externalOutputRootPath;
+                    var outputRootPath = data.location == QConfig.Asset.AssetPathType.StreamingAssets ? builtinOutputRootPath : externalOutputRootPath;
 
                     // Copy bundle to output path
                     string bundleFileGeneratePath = FileManager.PathCombine(workspace, build.assetBundleName);

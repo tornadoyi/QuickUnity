@@ -9,31 +9,51 @@ namespace QuickUnity
 {
     public partial class AssetManager : BaseManager<AssetManager>
     {
+        public static string streamingAssetsPath { get; private set; }
+        public static string serverAssetPath { get; private set;}
+        public static string downloadUrl { get; private set; }
 
-        public static Task StartAsync(
-            string builtinAssetPath, 
-            string externalAssetPath, 
-            string downloadUrl,
-            string builtinAssetTablePath, 
-            string externalAssetTablePath)
+        protected AssetTable assetTable;
+        protected Dictionary<string, AssetBundleInfo> loadedBundleDict = new Dictionary<string, AssetBundleInfo>();
+        protected Dictionary<string, AssetInfo> loadedAssetDict = new Dictionary<string, AssetInfo>();
+
+
+        public static bool init
         {
-            instance._builtinAssetPath = builtinAssetPath;
-            instance._externalAssetPath = externalAssetPath;
-            instance._downloadUrl = downloadUrl;
+            get
+            {
+                if (!QConfig.Asset.loadAssetFromAssetBundle)
+                {
+                    return true;
+                }
+                return instance.assetTable != null;
+            }
+        }
 
-            AssetManagerInitTask task = new AssetManagerInitTask(builtinAssetTablePath, externalAssetTablePath);
+        public static Task Start(
+            string streamingAssetsPath, 
+            string serverAssetPath, 
+            string downloadUrl,
+            string streamingAssetsTablePath, 
+            string serverTablePath)
+        {
+            AssetManager.streamingAssetsPath = streamingAssetsPath;
+            AssetManager.serverAssetPath = serverAssetPath;
+            AssetManager.downloadUrl = downloadUrl;
+
+            AssetManagerInitTask task = new AssetManagerInitTask(streamingAssetsTablePath, serverTablePath);
             task.Start();
             return task;
         }
 
-        public static DownloadAssetBundleTask DownloadAssetBundleAsync(string name)
+        public static DownloadAssetBundleTask DownloadAssetBundle(string name)
         {
             DownloadAssetBundleTask task = new DownloadAssetBundleTask(name);
             task.Start();
             return task;
         }
 
-        public static LoadAssetBundleTask LoadAssetBundleAsync(string name)
+        public static LoadAssetBundleTask LoadAssetBundle(string name)
         {
             LoadAssetBundleTask task = new LoadAssetBundleTask(name);
             task.Start();
@@ -42,32 +62,36 @@ namespace QuickUnity
 
         public static Object LoadAsset(string assetName)
         {
-            if(!QConfig.Asset.loadAssetFromAssetBundle)
+            if (string.IsNullOrEmpty(assetName))
             {
-#if UNITY_EDITOR
-                return UnityEditor.AssetDatabase.LoadMainAssetAtPath(assetName);
-#endif
+                Debug.LogError("Can not load asset, asset name is null");
+                return null;
             }
-            
-            AssetInfo info = instance.assetTable.GetAssetInfo(assetName);
-            if (info == null) return null;
-            if (info.loaded) return info.asset;
+            var info = instance.assetTable.GetAssetInfo(assetName);
+            if (info == null)
+            {
+                info = new LocalAssetInfo(assetName);
+                instance.assetTable.AddAssetInfo(info);
+            }
+
             info.Load();
             return info.asset;
         }
 
         public static Object[] LoadSubAssets(string assetName)
         {
-            if (!QConfig.Asset.loadAssetFromAssetBundle)
+            if (string.IsNullOrEmpty(assetName))
             {
-#if UNITY_EDITOR
-                return UnityEditor.AssetDatabase.LoadAllAssetsAtPath(assetName);
-#endif
+                Debug.LogError("Can not load asset, asset name is null");
+                return null;
+            }
+            var info = instance.assetTable.GetAssetInfo(assetName);
+            if (info == null)
+            {
+                info = new LocalAssetInfo(assetName);
+                instance.assetTable.AddAssetInfo(info);
             }
 
-            AssetInfo info = instance.assetTable.GetAssetInfo(assetName);
-            if (info == null) return null;
-            if (info.loaded) return info.subAssets;
             info.Load();
             return info.subAssets;
         }
@@ -101,11 +125,6 @@ namespace QuickUnity
             task.Start();
             return task;
         }
-
-        
-
-        protected static AssetInfo GetAssetInfo(string name) { return instance.assetTable.GetAssetInfo(name); }
-        protected static AssetBundleInfo GetAssetBundleInfo(string name) { return instance.assetTable.GetBundleInfo(name); }
             
         public static AssetBundle GetAssetBundle(string name)
         {
@@ -196,49 +215,17 @@ namespace QuickUnity
             //Debug.Log(string.Format("Asset {0} has been unload", assetInfo.name));
         }
 
-        
-        
-        /// <summary>
-        /// Base properties
-        /// </summary>
-        protected AssetTable assetTable;
 
-        public static string builtinAssetPath { get { return instance._builtinAssetPath; } }
-        protected string _builtinAssetPath = string.Empty;
+        protected static AssetInfo GetAssetInfo(string name) { return instance.assetTable.GetAssetInfo(name); }
 
-        public static string externalAssetPath { get { return instance._externalAssetPath; } }
-        protected string _externalAssetPath = string.Empty;
-
-        public static string downloadUrl { get { return instance._downloadUrl; } }
-        protected string _downloadUrl = string.Empty;
+        protected static AssetBundleInfo GetAssetBundleInfo(string name) { return instance.assetTable.GetBundleInfo(name); }
 
 
-        /// <summary>
-        /// Runtime properties
-        /// </summary>
-        protected Dictionary<string, AssetBundleInfo> loadedBundleDict = new Dictionary<string, AssetBundleInfo>();
-
-        protected Dictionary<string, AssetInfo> loadedAssetDict = new Dictionary<string, AssetInfo>();
-
-        public static bool init
-        {
-            get
-            {
-                if (!QConfig.Asset.loadAssetFromAssetBundle)
-                {
-                    return true;
-                }
-                return instance.assetTable != null;
-            }
-        }
-
-        
-
-
-        #region Task ==================================================================================================================
 
         public class DownloadAssetBundleTask : CoroutineTask
         {
+            public string name { get; private set;}
+
             public DownloadAssetBundleTask(string name)
             {
                 this.name = name;
@@ -262,12 +249,14 @@ namespace QuickUnity
                 yield return task.WaitForFinish();
                 if (task.fail) { SetFail(task.error); }
             }
-
-            protected string name;
         }
 
         public class LoadAssetBundleTask : CoroutineTask
         {
+            public UnityEngine.Object asset { get; private set;}
+            public UnityEngine.Object[] subAssets { get; private set;}
+            public string name { get; private set;}
+
             public LoadAssetBundleTask(string name)
             {
                 this.name = name;
@@ -291,34 +280,27 @@ namespace QuickUnity
                 yield return task.WaitForFinish();
                 if (task.fail) { SetFail(task.error); }
             }
-
-            protected string name;
         }
 
         public class LoadAssetTask : CoroutineTask
         {
+            public string name { get; private set;}
+            public UnityEngine.Object asset { get; private set; }
+            public UnityEngine.Object[] subAssets { get; private set; }
+
             public LoadAssetTask(string name)
             {
-                _name = string.IsNullOrEmpty(name) ? string.Empty : name;
+                name = string.IsNullOrEmpty(name) ? string.Empty : name;
             }
 
             protected override IEnumerator OnProcess()
             {
-                if (!QConfig.Asset.loadAssetFromAssetBundle)
-                {
-#if UNITY_EDITOR
-                    _subAssets = UnityEditor.AssetDatabase.LoadAllAssetsAtPath(name);
-                    _asset = UnityEditor.AssetDatabase.LoadAssetAtPath(name, typeof(UnityEngine.Object));
-                    if(_asset == null) SetFail("Can not load asset " + name);
-                    yield break;
-#endif
-                }
 
-                AssetInfo info = AssetManager.instance.assetTable.GetAssetInfo(name);
+                var info = AssetManager.GetAssetInfo(name);
                 if (info == null)
                 {
-                    SetFail("Can not find asset info " + name);
-                    yield break;
+                    info = new LocalAssetInfo(name);
+                    instance.assetTable.AddAssetInfo(info);
                 }
 
                 if (!info.loaded)
@@ -331,23 +313,20 @@ namespace QuickUnity
                         yield break;
                     }
                 }
-                _asset = info.asset;
-                _subAssets = info.subAssets;
+                asset = info.asset;
+                subAssets = info.subAssets;
             }
-
-            public UnityEngine.Object asset { get { return _asset; } }
-            protected UnityEngine.Object _asset;
-
-            public UnityEngine.Object[] subAssets { get { return _subAssets; } }
-            protected UnityEngine.Object[] _subAssets;
-
-            public string name { get { return _name; } }
-            protected string _name;
+              
         }
 
 
         public class AssetManagerInitTask : CoroutineTask
         {
+            public string builtInAssetTablePath { get; private set; }
+
+            public string externalAssetTablePath { get; private set; }
+
+
             public AssetManagerInitTask(string builtInAssetTablePath, string externalAssetTablePath)
             {
                 this.builtInAssetTablePath = builtInAssetTablePath;
@@ -358,6 +337,7 @@ namespace QuickUnity
             {
                 if (!QConfig.Asset.loadAssetFromAssetBundle)
                 {
+                    AssetManager.instance.assetTable = new AssetTable();
                     yield break;
                 }
                     
@@ -365,7 +345,7 @@ namespace QuickUnity
                 {
                     Task task = builtinTable.LoadAsync(
                         builtInAssetTablePath, 
-                        QConfig.Asset.AssetPathType.Builtin);
+                        QConfig.Asset.AssetPathType.StreamingAssets);
                     yield return task.WaitForFinish();
                 }
 
@@ -373,7 +353,7 @@ namespace QuickUnity
                 {
                     Task task = externalTable.LoadAsync(
                         externalAssetTablePath,
-                        QConfig.Asset.AssetPathType.External);
+                        QConfig.Asset.AssetPathType.Server);
                     yield return task.WaitForFinish();
                 }
 
@@ -383,15 +363,14 @@ namespace QuickUnity
                 assetTable.Analyse();
                 AssetManager.instance.assetTable = assetTable;
             }
-
-            public string builtInAssetTablePath { get; private set; }
-
-            public string externalAssetTablePath { get; private set; }
+                
         }
 
 
         public class AssetUnloadTask : CoroutineTask
         {
+            public AssetUnloadLevel level { get; private set; }
+
             public AssetUnloadTask(AssetUnloadLevel level)
             {
                 this.level = level;
@@ -449,11 +428,8 @@ namespace QuickUnity
                 }
             }
 
-
-            public AssetUnloadLevel level { get; private set; }
         }
-
-#endregion
+            
     }
 
     public enum AssetUnloadLevel { AssetBundles = 1, Assets = 2, All = 3, Default = 3 }

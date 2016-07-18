@@ -38,24 +38,36 @@ namespace QuickUnity
             return t;
         }
 
-        public void AddBundleInfos(params AssetBundleInfo[] bundles)
+        public void AddAssetBundleInfo(AssetBundleInfo info)
         {
-            if(bundles == null || bundles.Length == 0)
+            if (info == null)
             {
-                Debug.LogError("Invalid bundles");
+                Debug.LogError("Invalid asset bundle info");
                 return;
             }
 
-            for(int i=0; i<bundles.Length; ++i)
+            if(bundleDict.ContainsKey(info.id))
             {
-                AssetBundleInfo bundle = bundles[i];
-                if(bundleDict.ContainsKey(bundle.id))
-                {
-                    Debug.LogError(string.Format("Repeated bundle {0}", bundle.name));
-                    continue;
-                }
-                bundleDict.Add(bundle.id, bundle);
+                Debug.LogError(string.Format("Repeated bundle {0}", info.id));
+                return;
             }
+            bundleDict.Add(info.id, info);
+        }
+
+        public void AddAssetInfo(AssetInfo info)
+        {
+            if (info == null)
+            {
+                Debug.LogError("Invalid asset info");
+                return;
+            }
+
+            if(bundleDict.ContainsKey(info.name))
+            {
+                Debug.LogError(string.Format("Repeated asset {0}", info.name));
+                return;
+            }
+            assetDict.Add(info.name, info);
         }
 
 
@@ -178,7 +190,7 @@ namespace QuickUnity
                     var asset = new BundleAssetInfo(jassets[i] as string, bundle);
                     bundle.AddAssetInfo(asset);
                 }
-                AddBundleInfos(bundle);
+                AddAssetBundleInfo(bundle);
             }
             return true;
         }
@@ -186,12 +198,12 @@ namespace QuickUnity
         /// <summary>
         /// Generate by json parse
         /// </summary>
-        public Dictionary<string, AssetBundleInfo> bundleDict = new Dictionary<string, AssetBundleInfo>();
+        protected Dictionary<string, AssetBundleInfo> bundleDict = new Dictionary<string, AssetBundleInfo>();
 
         /// <summary>
         /// Generate by analyze
         /// </summary>
-        public Dictionary<string, AssetInfo> assetDict = new Dictionary<string, AssetInfo>();
+        protected Dictionary<string, AssetInfo> assetDict = new Dictionary<string, AssetInfo>();
 
 
 
@@ -208,7 +220,7 @@ namespace QuickUnity
             {
                 switch (assetPathType)
                 {
-                    case QConfig.Asset.AssetPathType.Builtin:
+                    case QConfig.Asset.AssetPathType.StreamingAssets:
                         {
                             WWWReadTextTask task = new WWWReadTextTask(filePath);
                             yield return task.Start().WaitForFinish();
@@ -216,7 +228,7 @@ namespace QuickUnity
                             table.FromJson(task.text, assetPathType);
 
                         } break;
-                    case QConfig.Asset.AssetPathType.External:
+                    case QConfig.Asset.AssetPathType.Server:
                         {
                             FileReadTextTask task = new FileReadTextTask(filePath);
                             yield return task.Start().WaitForFinish();

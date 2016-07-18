@@ -175,9 +175,9 @@ namespace QuickUnity
         public QConfig.Asset.AssetPathType pathType { get { return _pathType; } }
         public QConfig.Asset.AssetPathType _pathType;
 
-        public bool isBuiltin { get { return pathType == QConfig.Asset.AssetPathType.Builtin; } }
+        public bool isBuiltin { get { return pathType == QConfig.Asset.AssetPathType.StreamingAssets; } }
   
-        public bool isExternal { get { return pathType == QConfig.Asset.AssetPathType.External; } }
+        public bool isExternal { get { return pathType == QConfig.Asset.AssetPathType.Server; } }
 
         public List<string> dependList { get { return _dependList; } }
         protected List<string> _dependList = new List<string>();
@@ -188,11 +188,11 @@ namespace QuickUnity
         {
             get
             {
-                if (_pathType == QConfig.Asset.AssetPathType.Builtin)
+                if (_pathType == QConfig.Asset.AssetPathType.StreamingAssets)
                 {
                     return string.Format(
                         "{0}.{1}.{2}",
-                        FileManager.PathCombine(AssetManager.builtinAssetPath, relativePath, name),
+                        FileManager.PathCombine(AssetManager.streamingAssetsPath, relativePath, name),
                         version,
                         QConfig.Asset.assetBundleSuffix);
                 }
@@ -200,7 +200,7 @@ namespace QuickUnity
                 {
                     return string.Format(
                         "{0}.{1}.{2}",
-                        FileManager.PathCombine(AssetManager.externalAssetPath, relativePath, name),
+                        FileManager.PathCombine(AssetManager.serverAssetPath, relativePath, name),
                         version,
                         QConfig.Asset.assetBundleSuffix);
                 }
@@ -211,7 +211,7 @@ namespace QuickUnity
         {
             get
             {
-                if (_pathType == QConfig.Asset.AssetPathType.Builtin) return string.Empty;
+                if (_pathType == QConfig.Asset.AssetPathType.StreamingAssets) return string.Empty;
                 return string.Format(
                     "{0}.{1}.{2}",
                     FileManager.PathCombine(AssetManager.downloadUrl, relativePath, name),
@@ -253,7 +253,7 @@ namespace QuickUnity
         {
             get
             {
-                if (_pathType == QConfig.Asset.AssetPathType.Builtin) return true;
+                if (_pathType == QConfig.Asset.AssetPathType.StreamingAssets) return true;
                 return System.IO.File.Exists(fileCachePath);
             }
         }
@@ -374,7 +374,7 @@ namespace QuickUnity
                 byte[] bytes = null;
                 switch (pathType)
                 {
-                    case QConfig.Asset.AssetPathType.External:
+                    case QConfig.Asset.AssetPathType.Server:
                         {
                             FileReadBytesTask task = new FileReadBytesTask(path);
                             yield return task.Start().WaitForFinish();
@@ -388,7 +388,7 @@ namespace QuickUnity
                         }
                         break;
 
-                    case QConfig.Asset.AssetPathType.Builtin:
+                    case QConfig.Asset.AssetPathType.StreamingAssets:
                         {
                             WWWReadBytesTask task = HttpManager.GetBytes(path, QConfig.Network.wwwReadFileTimeout);
                             yield return task.WaitForFinish();
@@ -410,7 +410,7 @@ namespace QuickUnity
 
                 if (bytes == null) yield break;
 
-                if (!string.IsNullOrEmpty(_expectMD5) && pathType == QConfig.Asset.AssetPathType.External)
+                if (!string.IsNullOrEmpty(_expectMD5) && pathType == QConfig.Asset.AssetPathType.Server)
                 {
                     _md5 = Utility.MD5.Compute(bytes);
                     if (_md5 != _expectMD5)
