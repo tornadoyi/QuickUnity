@@ -26,7 +26,7 @@ namespace QuickUnity
             _pathType = pathType;
         }
 
-        public bool AddAssetInfo(AssetInfo asset)
+        public bool AddAssetInfo(BundleAssetInfo asset)
         {
             if (asset == null)
             {
@@ -46,7 +46,6 @@ namespace QuickUnity
                 return false;
             }
             _assetDict.Add(asset.name, asset);
-            asset.bundleInfo = this;
 
             return true;
         }

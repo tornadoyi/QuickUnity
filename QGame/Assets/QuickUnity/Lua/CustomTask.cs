@@ -14,6 +14,12 @@ namespace QuickUnity
         new public void SetFail(string error) { base.SetFail(error); SetFinish(); }
         new public void SetCancel(string error = default(string)) { base.SetCancel(error); SetFinish(); }
         new public void SetTimeout(string error = default(string)) { base.SetTimeout(error); SetFinish(); }
+
+        new protected void SetFinish()
+        {
+            if (state == State.Finish) return;
+            base.SetFinish();
+        }
     }
 }
 

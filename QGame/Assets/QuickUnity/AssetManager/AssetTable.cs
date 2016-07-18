@@ -175,7 +175,7 @@ namespace QuickUnity
                 var jassets = jbundle.GetArray("assets");
                 for (int i = 0; i < jassets.Count; ++i)
                 {
-                    AssetInfo asset = new AssetInfo(jassets[i] as string);
+                    var asset = new BundleAssetInfo(jassets[i] as string, bundle);
                     bundle.AddAssetInfo(asset);
                 }
                 AddBundleInfos(bundle);
@@ -194,8 +194,6 @@ namespace QuickUnity
         public Dictionary<string, AssetInfo> assetDict = new Dictionary<string, AssetInfo>();
 
 
-
-        #region Task ==================================================================================
 
         protected class LoadAssetTableTask : CoroutineTask
         {
@@ -239,7 +237,6 @@ namespace QuickUnity
             protected QConfig.Asset.AssetPathType assetPathType;
         }
 
-        #endregion
     }
 
 

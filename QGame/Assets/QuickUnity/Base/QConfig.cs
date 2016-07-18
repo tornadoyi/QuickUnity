@@ -50,6 +50,7 @@ namespace QuickUnity
             {
                 Builtin = 0,
                 External = 1,
+                Resources = 2,
             }
 
             public static bool loadAssetFromAssetBundle = true;

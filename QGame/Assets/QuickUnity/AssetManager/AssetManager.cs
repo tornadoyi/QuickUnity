@@ -9,9 +9,6 @@ namespace QuickUnity
 {
     public partial class AssetManager : BaseManager<AssetManager>
     {
-        
-        #region Public Methods
-
 
         public static Task StartAsync(
             string builtinAssetPath, 
@@ -146,10 +143,6 @@ namespace QuickUnity
             
         }
 
-#endregion
-
-
-#region Protected Method
 
         protected override void Awake()
         {
@@ -202,9 +195,6 @@ namespace QuickUnity
             loadedAssetDict.Remove(assetInfo.name);
             //Debug.Log(string.Format("Asset {0} has been unload", assetInfo.name));
         }
- 
-
-#endregion
 
         
         
