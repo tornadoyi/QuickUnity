@@ -123,7 +123,7 @@ public class Lua_QuickUnity_HttpManager : LuaObject {
 				pushValue(l,ret);
 				return 2;
 			}
-			else if(argc==8){
+			else if(argc==7){
 				System.String a1;
 				checkType(l,1,out a1);
 				System.String a2;
@@ -136,11 +136,9 @@ public class Lua_QuickUnity_HttpManager : LuaObject {
 				checkType(l,5,out a5);
 				System.Int32 a6;
 				checkType(l,6,out a6);
-				System.Int32 a7;
+				System.Single a7;
 				checkType(l,7,out a7);
-				System.Single a8;
-				checkType(l,8,out a8);
-				var ret=QuickUnity.HttpManager.Download(a1,a2,a3,a4,a5,a6,a7,a8);
+				var ret=QuickUnity.HttpManager.Download(a1,a2,a3,a4,a5,a6,a7);
 				pushValue(l,true);
 				pushValue(l,ret);
 				return 2;

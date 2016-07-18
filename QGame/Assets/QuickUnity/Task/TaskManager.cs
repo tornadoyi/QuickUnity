@@ -7,8 +7,11 @@ namespace QuickUnity
     /// <summary>
     /// Task System execute task in Coroutine 
     /// </summary>
+    
     public class TaskManager : BaseManager<TaskManager>
     {
+        public delegate IEnumerator CoroutineTaskDelegate();
+
         public static Coroutine CoroutineTask(CoroutineTaskDelegate d)
         {
             if (d == null)
@@ -22,8 +25,7 @@ namespace QuickUnity
             if(co == null) { Debug.LogError("Invalid coroutine"); return; }
             instance.StopCoroutine(co);
         }
-        
-        public delegate IEnumerator CoroutineTaskDelegate();
+
     }
 
 
@@ -32,35 +34,185 @@ namespace QuickUnity
     /// Task means a job which will be executed in Coroutine Or Thread or Immediately, depend on implementation . 
     /// This is just a interface.
     /// </summary>
+
     public class Task
     {
-        public void Start() { Start(null, null); }
-        public void Start(TaskDoneHandler doneCallback, TaskProcessHandler progressCallback)
+        public delegate void FinishCallback(Task task);
+        public delegate void ProgressCallback(Task task, float percent);
+
+        class Callback
         {
-            if (state != TaskState.Ready) { Debug.LogError("Task has been used, cannot start again"); return; }
-            state = TaskState.Running;
-            doneHandler += doneCallback;
-            progressHandler += progressCallback;
-            _startTime = Time.time;
-            OnStart();
-            if(_timeout >= 0)
+            public Callback(FinishCallback callback, Result result, ErrorCode errorCode)
             {
-                co_timeout = TaskManager.CoroutineTask(new TaskManager.CoroutineTaskDelegate(WaitForTimeout));
+                this.callback = callback;
+                this.result = result;
+                this.errorCode = errorCode;
             }
+            public FinishCallback callback;
+            public Result result;
+            public ErrorCode errorCode;
+        }
+
+        protected enum State { Sleep = 0, Running, Finish}
+        protected enum Result { None = 0, Success = 1, Fail = 2, Any = Success | Fail}
+        protected enum ErrorCode { None = 0, Cancel = 1, Timeout = 2, Others = 4, Any = Cancel | Timeout | Others}
+
+        protected State state { get; set; }
+        public bool sleep { get { return state == State.Sleep; } }
+        public bool running { get { return state == State.Running; } }
+        public bool finish { get { return state == State.Finish; } }
+
+        protected Result result { get; set; }
+        public bool success { get { return result == Result.Success; } }
+        public bool fail { get { return result == Result.Fail; } }
+
+        public float progress { get; private set; }
+
+        protected ErrorCode errorCode { get; set; }
+        public string error { get; protected set; }
+
+        public int retryCount { get; set; }
+        public int curRetryCount { get; private set; }
+
+        public float startTime { get; private set; }
+        public float endTime { get; private set; }
+        public float timeout
+        {
+            get { return _timeout; }
+            set
+            {
+                _timeout = value;
+                if (_timeout >= 0 && co_timeout != null) { co_timeout = TaskManager.CoroutineTask(new TaskManager.CoroutineTaskDelegate(WaitForTimeout)); }
+            }
+        }
+        protected float _timeout = -1;
+        private Coroutine co_timeout;
+        public float costTime { get { return startTime == 0 ? 0 : endTime == 0 ? Time.time - startTime : endTime - startTime; } }
+        public bool hasTimeout { get { return timeout < 0 ? false : (costTime - startTime >= _timeout); } }
+
+        private List<Callback> finishCallbacks;
+        private List<ProgressCallback> progressCallbacks;
+
+        public Task()
+        {
 #if UNITY_EDITOR
-            TaskMonitor.RecordTaskStart(this);
+            TaskMonitor.RecordTaskCreate(this);
 #endif
         }
 
-        public IEnumerator StartAndWaitForDone(TaskDoneHandler doneCallback = null, TaskProcessHandler progressCallback = null)
+        public Task Start()
         {
-            Start(doneCallback, progressCallback);
-            return WaitForDone();
+            if (state != State.Sleep) { Debug.LogError("Task has been used, cannot start again"); return this; }
+            state = State.Running;
+            result = Result.None;
+            progress = 0;
+            errorCode = ErrorCode.None;
+            error = string.Empty;
+            startTime = Time.time;
+            endTime = 0;
+
+            ++curRetryCount;
+            OnStart();
+#if UNITY_EDITOR
+            if(curRetryCount == 1) TaskMonitor.RecordTaskStart(this);
+#endif
+            return this;
         }
 
-        public IEnumerator WaitForDone()
+
+        public Task Finish(FinishCallback callback)
         {
-            while (!done)
+            if (callback == null) return this;
+            if(state == State.Finish)
+            {
+                callback(this);
+            }
+            else
+            {
+                if (finishCallbacks == null) finishCallbacks = new List<Callback>();
+                finishCallbacks.Add(new Callback(callback, Result.Any, ErrorCode.None));
+            }
+            return this;
+        }
+
+        public Task Success(FinishCallback callback)
+        {
+            if (callback == null) return this;
+            if (state == State.Finish)
+            {
+                if(result == Result.Success) callback(this);
+            }
+            else
+            {
+                if (finishCallbacks == null) finishCallbacks = new List<Callback>();
+                finishCallbacks.Add(new Callback(callback, Result.Success, ErrorCode.None));
+            }
+            return this;
+        }
+
+        public Task Fail(FinishCallback callback)
+        {
+            if (callback == null) return this;
+            if (state == State.Finish)
+            {
+                if (result == Result.Fail) callback(this);
+            }
+            else
+            {
+                if (finishCallbacks == null) finishCallbacks = new List<Callback>();
+                finishCallbacks.Add(new Callback(callback, Result.Fail, ErrorCode.Any));
+            }
+            return this;
+        }
+
+        public Task Cancel(FinishCallback callback)
+        {
+            if (callback == null) return this;
+            if (state == State.Finish)
+            {
+                if (result == Result.Fail && errorCode == ErrorCode.Cancel) callback(this);
+            }
+            else
+            {
+                if (finishCallbacks == null) finishCallbacks = new List<Callback>();
+                finishCallbacks.Add(new Callback(callback, Result.Fail, ErrorCode.Cancel));
+            }
+            return this;
+        }
+
+        public Task Timeout(FinishCallback callback)
+        {
+            if (callback == null) return this;
+            if (state == State.Finish)
+            {
+                if (result == Result.Fail && errorCode == ErrorCode.Timeout) callback(this);
+            }
+            else
+            {
+                if (finishCallbacks == null) finishCallbacks = new List<Callback>();
+                finishCallbacks.Add(new Callback(callback, Result.Fail, ErrorCode.Timeout));
+            }
+            return this;
+        }
+
+        public Task Progress(ProgressCallback callback)
+        {
+            if (callback == null) return this;
+            if (state == State.Finish)
+            {
+                callback(this, progress);
+            }
+            else
+            {
+                if (progressCallbacks == null) progressCallbacks = new List<ProgressCallback>();
+                progressCallbacks.Add(callback);
+            }
+            return this;
+        }
+
+        public IEnumerator WaitForFinish()
+        {
+            while (!finish)
             {
                 yield return null;
             }
@@ -68,32 +220,42 @@ namespace QuickUnity
 
         protected IEnumerator WaitForTimeout()
         {
-            yield return new WaitForSeconds(_timeout);
-            if (state == TaskState.Done) yield break;
-            SetResultFailed(string.Format("Task is timeout, timeout:{0}", _timeout));
-            Done();
+            while(state != State.Finish)
+            {
+                if (!hasTimeout) yield return null;
+                SetTimeout();
+            }
+            co_timeout = null;
         }
 
-        protected virtual void OnStart() { }
-
-        protected void Done()
+        protected void SetSuccess() { SetResult(Result.Success, ErrorCode.None, string.Empty); }
+        protected void SetFail(string error) { SetResult(Result.Fail, ErrorCode.Others, error); }
+        protected void SetFail(System.Exception e) { SetResult(Result.Fail, ErrorCode.Others, e.ToString()); }
+        protected void SetFail(string error, string suberror) { SetResult(Result.Fail, ErrorCode.Others, error + "\n" + suberror); }
+        protected void SetCancel(string error = default(string)) { SetResult(Result.Fail, ErrorCode.Cancel, error); }
+        protected void SetTimeout(string error = default(string)) { SetResult(Result.Fail, ErrorCode.Timeout, error); }
+        protected void SetProgress(float progress)
         {
-            End();
+            this.progress = progress;
+            NotifyProgressCallbacks();
         }
 
-        protected void Error(string error)
+        // Only call at child class
+        protected void SetFinish()
         {
-            _result = false;
-            SetError(error);
-            End();
-        }
+            if (state == State.Finish) return;
+            state = State.Finish;
+            if (result == Result.None) result = Result.Success;
+            endTime = Time.time;
 
-        private void End()
-        {
-            if (state == TaskState.Done) return;
-            state = TaskState.Done;
-            _endTime = Time.time;
-            SendDoneMessage();
+            if(curRetryCount < retryCount)
+            {
+                state = State.Sleep;
+                Start();
+                return;
+            }
+
+            NotifyFinishCallbacks();
             if (co_timeout != null)
             {
                 TaskManager.StopCoroutineTask(co_timeout);
@@ -104,124 +266,53 @@ namespace QuickUnity
 #endif
         }
 
-        protected virtual void Progress(float percent)
+        private void SetResult(Result result, ErrorCode errorCode, string error)
         {
-            if (state != TaskState.Running || percent <= _progress) return;
-            _progress = percent;
-            SendProcessMessage();
+            if (result == Result.None) return;
+            this.result = result;
+            this.errorCode = errorCode;
+            this.error = error;
         }
 
-        protected virtual void SetResultFailed(System.Exception e) { _result = false; SetError(e.ToString()); }
-        protected virtual void SetResultFailed(string error, string suberror = default(string))
+        private void NotifyFinishCallbacks()
         {
-            _result = false;
-            SetError(error);
-            SetError(suberror);
-        }
-
-        private void SetError(string msg)
-        {
-            if (string.IsNullOrEmpty(msg)) return;
-            if (string.IsNullOrEmpty(_error))
+            if (finishCallbacks == null) return;
+            for(int i=0; i<finishCallbacks.Count; ++i)
             {
-                _error = msg;
+                var item = finishCallbacks[i];
+                if (item.result != result ||
+                    item.errorCode != errorCode) continue;
+                item.callback(this);
             }
-            else
+            finishCallbacks.Clear();
+            progressCallbacks.Clear();
+        }
+
+        private void NotifyProgressCallbacks()
+        {
+            if (progressCallbacks == null) return;
+            for (int i = 0; i < progressCallbacks.Count; ++i)
             {
-                _error += "\n" + msg;
-            }
-        }
-
-        protected virtual void SetResultSucess() { _result = true; }
-
-        private void SendDoneMessage()
-        {
-            if (doneHandler != null) doneHandler.Invoke(result);
-        }
-
-        private void SendProcessMessage()
-        {
-            if (progressHandler != null) progressHandler.Invoke(progress);
-        }
-
-        public void AddDoneCallback(TaskDoneHandler handler) { doneHandler += handler; }
-        public void AddProgressCallback(TaskProcessHandler handler) { progressHandler += handler; }
-
-        public event TaskDoneHandler doneHandler;
-        public event TaskProcessHandler progressHandler;
-
-        public float progress { get { return _progress; } }
-        private float _progress = 0;
-
-        public bool result { get { return _result; } }
-        private bool _result = true;
-
-        public string error { get { return _error; } }
-        private string _error = string.Empty;
-
-        public bool ready { get { return state == TaskState.Ready; } }
-        public bool running { get { return state == TaskState.Running; } }
-        public bool done { get { return state == TaskState.Done; } }
-
-        public float lastTime
-        {
-            get
-            {
-                if (_startTime == 0) return 0;
-                if (_endTime == 0) return Time.time - _startTime;
-                return _endTime - _startTime;
+                var callback = progressCallbacks[i];
+                callback(this, progress);
             }
         }
 
-        public float startTime { get { return _startTime; } }
-        private float _startTime = 0;
-
-        public float endTime { get { return _endTime; } }
-        private float _endTime = 0;
-
-        public float timeout
-        {
-            get { return _timeout; }
-            set
-            {
-                if(value < 0) { Debug.LogErrorFormat("Invalid timeout {0}", value); return; }
-                if(state != TaskState.Ready)
-                {
-                    Debug.LogError("Can not set timeout after task run");
-                    return;
-                }
-                _timeout = value;
-            }
-        }
-        protected float _timeout = -1;
-        private Coroutine co_timeout;
-
-        protected bool hasTimeout
-        {
-            get
-            {
-                if (_timeout < 0) return false;
-                return (lastTime - _startTime >= _timeout);
-            }
-        }
-
-        public TaskState state { get; private set; }
-
-        public enum TaskState
-        {
-            Ready = 0,
-            Running,
-            Done,
-        }
+        protected virtual void OnStart() { }
+        
     }
 
-    public delegate void TaskDoneHandler(bool result = true);
-    public delegate void TaskProcessHandler(float percent = 100.0f);
+    
 
 
 #if UNITY_EDITOR
     public class TaskMonitor : Singleton<TaskMonitor>
     {
+        public static void RecordTaskCreate(Task task)
+        {
+            instance.runtimeTaskList.Add(task);
+        }
+
         public static void RecordTaskStart(Task task)
         {
             instance.runtimeTaskList.Add(task);

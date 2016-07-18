@@ -48,7 +48,7 @@ namespace QuickUnity
 
             // Create task
             loadTask = new LoadAssetTask(this);
-            loadTask.doneHandler += (result) =>
+            loadTask.Finish((result) =>
             {
                 // Decrease load count
                 --bundleInfo.assetLoadingCount;
@@ -60,8 +60,8 @@ namespace QuickUnity
                     asset = task.asset;
                     assetLoad.Invoke(this);
                 }
-                
-            };
+
+            });
             loadTask.Start();
 
             return loadTask;
@@ -130,10 +130,10 @@ namespace QuickUnity
                 if (!bundleInfo.loaded)
                 {
                     Task task = bundleInfo.LoadAsync();
-                    yield return task.WaitForDone();
+                    yield return task.WaitForFinish();
                     if (bundleInfo.assetBundle == null)
                     {
-                        SetResultFailed(string.Format("Load bundle failed, {0}", task.error));
+                        SetFail(string.Format("Load bundle failed, {0}", task.error));
                         yield break;
                     }
                 }
@@ -147,7 +147,7 @@ namespace QuickUnity
 
                 if (_asset == null && _subAssets == null)
                 {
-                    SetResultFailed(string.Format("Load sub asset failed, asset name:{0}", assetInfo.name));
+                    SetFail(string.Format("Load sub asset failed, asset name:{0}", assetInfo.name));
                     yield break;
                 }
             }

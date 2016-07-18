@@ -19,7 +19,7 @@ public class Initializer : MonoBehaviour {
 
         Setting.Load();
 
-        yield return LuaEngine.StartAsync().WaitForDone();
+        yield return LuaEngine.StartAsync().WaitForFinish();
 
         LuaLoaderHelper.PushLuaLoader("ss");
 

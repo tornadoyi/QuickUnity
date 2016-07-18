@@ -38,12 +38,12 @@ namespace QuickUnity
             string internetProxy,
             string expectMD5,
             int expectFileSize,
-            int retryCount,
             float timeout)
         {
             var task = new HttpDownloadTask(
-                url, fileSavePath, automaticDecompression, internetProxy, expectMD5, expectFileSize, retryCount);
+                url, fileSavePath, automaticDecompression, internetProxy, expectMD5, expectFileSize);
             task.timeout = timeout;
+            task.retryCount = QConfig.Network.maxDownloadRetryCount;
             AddTask(new RequestTask(task));
             return task;
         }
@@ -58,6 +58,7 @@ namespace QuickUnity
             var task = new WWWDownloadTask(url, fileSavePath, expectMD5, expectFileSize);
             AddTask(new RequestTask(task));
             task.timeout = timeout;
+            task.retryCount = QConfig.Network.maxDownloadRetryCount;
             return task;
         }
 
@@ -77,22 +78,22 @@ namespace QuickUnity
             string expectMD5,
             int expectFileSize)
         {
+            Task task = null;
             if (QConfig.Network.donwloadMode == DownloadMode.WWW ||
                 url.StartsWith("file://"))
             {
-                var task = new WWWDownloadTask(url, fileSavePath, expectMD5, expectFileSize);
-                task.timeout = QConfig.Network.downloadTimeout;
-                AddTask(new RequestTask(task));
-                return task;
+                task = new WWWDownloadTask(url, fileSavePath, expectMD5, expectFileSize);
             }
             else
             {
-                var task = new HttpDownloadTask(
-                    url, fileSavePath, false, string.Empty, expectMD5, expectFileSize, QConfig.Network.maxDownloadRetryCount);
-                task.timeout = QConfig.Network.downloadTimeout;
-                AddTask(new RequestTask(task));
-                return task;
+                task = new HttpDownloadTask(
+                    url, fileSavePath, false, string.Empty, expectMD5, expectFileSize);
+                
             }
+            task.timeout = QConfig.Network.downloadTimeout;
+            task.retryCount = QConfig.Network.maxDownloadRetryCount;
+            AddTask(new RequestTask(task));
+            return task;
         }
 
         public static WWWRequest Request(string url)
@@ -126,7 +127,7 @@ namespace QuickUnity
             if (waitingList.Count <= 0) return;
             var request = waitingList.Dequeue();
             runingList.Add(request);
-            request.task.doneHandler += (result) => { runingList.Remove(request); TryRunTask(); };
+            request.task.Finish((result) => { runingList.Remove(request); TryRunTask(); });
             request.task.Start();
         }
 
@@ -135,15 +136,9 @@ namespace QuickUnity
 
         protected class RequestTask
         {
-            public RequestTask(WWWTask task)
+            public RequestTask(Task task)
             {
-                type = RequestType.WWW;
-                this.task = task;
-            }
-
-            public RequestTask(HttpTask task)
-            {
-                type = RequestType.HTTP;
+                this.type = task is WWWTask ? RequestType.WWW : RequestType.HTTP;
                 this.task = task;
             }
 

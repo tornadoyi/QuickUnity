@@ -5,79 +5,113 @@ using System.Threading;
 
 namespace QuickUnity
 {
-    public class AsyncTask : Task
+    public class AsyncTask : Task 
     {
-        #region Method
+        public class ThreadTask
+        {
+            public volatile int threadID;
+            public volatile string error = string.Empty;
+            public volatile float progress;
+            public volatile int result;
+            public volatile int errorCode;
+            public volatile bool hasTimeout;
+            public bool success { get { return result == (int)Result.Success; } }
+            public bool fail { get { return result == (int)Result.Fail; } }
+
+            private Task master { get; set; }
+
+            public void SetMasterTask(Task master)
+            {
+                if (master == null)
+                {
+                    Debug.LogError("Thread task need an master task");
+                    return;
+                }
+                this.master = master;
+            }
+
+            public void AsynRun(System.Object state)
+            {
+                threadID = System.Threading.Thread.CurrentThread.ManagedThreadId;
+                try
+                {
+                    OnAsyncProcess();
+                }
+                catch (System.Exception e)
+                {
+                    SetFail(e);
+                }
+
+            }
+
+            protected void SetSuccess() { SetResult(Result.Success, ErrorCode.None, string.Empty); }
+            protected void SetFail(string error = default(string)) { SetResult(Result.Fail, ErrorCode.Others, error); }
+            protected void SetFail(System.Exception e) { SetResult(Result.Fail, ErrorCode.Others, e.ToString()); }
+            protected void SetCancel(string error = default(string)) { SetResult(Result.Fail, ErrorCode.Cancel, error); }
+            protected void SetTimeout(string error = default(string)) { SetResult(Result.Fail, ErrorCode.Timeout, error); }
+            protected void SetProgress(float progress) { this.progress = progress; }
+            private void SetResult(Result result, ErrorCode errorCode, string error)
+            {
+                if (result != Result.None) return;
+                this.result = (int)result;
+                this.errorCode = (int)errorCode;
+                this.error = error;
+            }
+
+            protected virtual void OnAsyncProcess() { throw new System.InvalidOperationException("Not Implement"); }
+        }
+        
+
+        private volatile ThreadTask threadTask;
+
 
         protected override void OnStart()
         {
-            TaskManager.CoroutineTask(new TaskManager.CoroutineTaskDelegate(this.WaitThreadDone));
-            Toub.Threading.ManagedThreadPool.QueueUserWorkItem(new WaitCallback(this.AsynRun));
+            TaskManager.CoroutineTask(new TaskManager.CoroutineTaskDelegate(this.WaitThreadFinish));
+            threadTask = CreateThreadTask();
+            threadTask.SetMasterTask(this);
+            OnSyncParameters(threadTask);
+            Toub.Threading.ManagedThreadPool.QueueUserWorkItem(new WaitCallback(threadTask.AsynRun));
             return;
         }
 
-        #endregion
-
-        protected virtual void OnAsyncProcess() { throw new System.InvalidOperationException("Not Implement"); }
-
-        protected override void Progress(float percent) { _asyncProgress = percent; }
-        protected override void SetResultFailed(System.Exception e) { _asyncResult = false; _asyncError = e.ToString(); }
-        protected override void SetResultFailed(string error, string suberror = default(string))
+        IEnumerator WaitThreadFinish()
         {
-            _asyncResult = false;
-            _asyncError = error;
-            if (string.IsNullOrEmpty(suberror)) return;
-            _asyncError += "\n" + suberror;
-        }
-        protected override void SetResultSucess() { _asyncResult = true; }
-
-        protected bool HasTimeout() { return _asyncHasTimeout; }
-
-        #region Private Method
-        IEnumerator WaitThreadDone()
-        {
-            while(!threadDone)
+            while ((Result)threadTask.result == Result.None)
             {
                 // Set progress
-                base.Progress(_asyncProgress);
+                base.SetProgress(threadTask.progress);
 
                 // Sync timeout
-                _asyncHasTimeout = hasTimeout;
+                threadTask.hasTimeout = hasTimeout;
 
                 yield return null;
             }
-            if (!_asyncResult) base.SetResultFailed(_asyncError);
-            Done();
+
+            // Sync
+            OnSyncParameters(threadTask);
+            var res = (Result)threadTask.result;
+            var code = (ErrorCode)threadTask.errorCode;
+            if (res == Result.Success)
+            {
+                SetSuccess();
+            }
+            else
+            {
+                switch(code)
+                {
+                    case ErrorCode.Cancel: SetCancel(threadTask.error); break;
+                    case ErrorCode.Timeout: SetTimeout(threadTask.error); break;
+                    default: SetFail(threadTask.error); break;
+                }
+            }
+
+            // Finish,  Note: Must be the end of this function
+            SetFinish();
         }
 
-        void AsynRun(System.Object state)
-        {
-            _threadID = System.Threading.Thread.CurrentThread.ManagedThreadId;
-            try
-            {
-                OnAsyncProcess();
-            }
-            catch(System.Exception e)
-            {
-                Debug.LogError(e);
-            }
-            finally
-            {
-                threadDone = true;
-            }                     
-        }
-        #endregion
-
-        public int threadID { get { return _threadID; } }
-        private volatile int _threadID = 0;
-
-        public bool asyncResult { get { return _asyncResult; } }
-
-        private volatile bool threadDone = false;
-        private volatile bool _asyncResult = true;
-        private volatile float _asyncProgress = 0.0f;
-        private volatile string _asyncError = string.Empty;
-        private volatile bool _asyncHasTimeout = false;
+        protected virtual ThreadTask CreateThreadTask() { throw new System.InvalidOperationException("Not Implement"); }
+        protected virtual void OnSyncParameters(ThreadTask task) { }
     }
 }
 

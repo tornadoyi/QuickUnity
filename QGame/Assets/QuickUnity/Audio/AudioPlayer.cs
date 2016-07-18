@@ -83,7 +83,7 @@ namespace QuickUnity
             {
                 if (string.IsNullOrEmpty(name)) break;
                 var task = AssetManager.LoadAudioClipAsync(name);
-                while (!task.done) { yield return null; }
+                yield return task.WaitForFinish();
 
                 if (task.clip == null) break;
                 AudioEnginee.ResetAudioSource(source, sampleName);

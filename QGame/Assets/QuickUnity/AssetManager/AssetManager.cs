@@ -264,13 +264,13 @@ namespace QuickUnity
                 AssetBundleInfo info = AssetManager.instance.assetTable.GetBundleInfo(name);
                 if (info == null)
                 {
-                    SetResultFailed(string.Format("Can not find AssetBundle {0}", name));
+                    SetFail(string.Format("Can not find AssetBundle {0}", name));
                     yield break;
                 }
 
                 Task task = info.Download();
-                yield return task.WaitForDone();
-                if (!task.result) { SetResultFailed(task.error); }
+                yield return task.WaitForFinish();
+                if (task.fail) { SetFail(task.error); }
             }
 
             protected string name;
@@ -293,13 +293,13 @@ namespace QuickUnity
                 AssetBundleInfo info = AssetManager.instance.assetTable.GetBundleInfo(name);
                 if (info == null)
                 {
-                    SetResultFailed(string.Format("Can not find AssetBundle {0}", name));
+                    SetFail(string.Format("Can not find AssetBundle {0}", name));
                     yield break;
                 }
 
                 Task task = info.LoadAsync();
-                yield return task.WaitForDone();
-                if (!task.result) { SetResultFailed(task.error); }
+                yield return task.WaitForFinish();
+                if (task.fail) { SetFail(task.error); }
             }
 
             protected string name;
@@ -319,7 +319,7 @@ namespace QuickUnity
 #if UNITY_EDITOR
                     _subAssets = UnityEditor.AssetDatabase.LoadAllAssetsAtPath(name);
                     _asset = UnityEditor.AssetDatabase.LoadAssetAtPath(name, typeof(UnityEngine.Object));
-                    if(_asset == null) SetResultFailed("Can not load asset " + name);
+                    if(_asset == null) SetFail("Can not load asset " + name);
                     yield break;
 #endif
                 }
@@ -327,17 +327,17 @@ namespace QuickUnity
                 AssetInfo info = AssetManager.instance.assetTable.GetAssetInfo(name);
                 if (info == null)
                 {
-                    SetResultFailed("Can not find asset info " + name);
+                    SetFail("Can not find asset info " + name);
                     yield break;
                 }
 
                 if (!info.loaded)
                 {
                     var task = info.LoadAsync();
-                    yield return task.WaitForDone();
-                    if (!task.result)
+                    yield return task.WaitForFinish();
+                    if (task.fail)
                     {
-                        SetResultFailed("Load asset failed", task.error);
+                        SetFail("Load asset failed", task.error);
                         yield break;
                     }
                 }
@@ -376,7 +376,7 @@ namespace QuickUnity
                     Task task = builtinTable.LoadAsync(
                         builtInAssetTablePath, 
                         QConfig.Asset.AssetPathType.Builtin);
-                    yield return task.WaitForDone();
+                    yield return task.WaitForFinish();
                 }
 
                 AssetTable externalTable = new AssetTable();
@@ -384,7 +384,7 @@ namespace QuickUnity
                     Task task = externalTable.LoadAsync(
                         externalAssetTablePath,
                         QConfig.Asset.AssetPathType.External);
-                    yield return task.WaitForDone();
+                    yield return task.WaitForFinish();
                 }
 
                 // merge table

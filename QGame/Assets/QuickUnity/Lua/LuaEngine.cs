@@ -49,7 +49,7 @@ namespace QuickUnity
         public static Task StartAsync()
         {
             var task = new CustomTask();
-            instance.init(null, () => { task.Done(); });
+            instance.init(null, () => { task.SetSuccess(); });
             LuaState.loaderDelegate = instance.InnerLoaderDelegate;
             return task;
         }

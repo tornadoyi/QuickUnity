@@ -82,12 +82,6 @@ namespace QuickUnity
     public delegate void QEventHandler3(System.Object parm1, System.Object parm2, System.Object parm3);
     public delegate void QEventHandler4(System.Object parm1, System.Object parm2, System.Object parm3, System.Object parm4);
 
-    public delegate System.Object QAction();
-    public delegate System.Object QAction1(System.Object parm1);
-    public delegate System.Object QAction2(System.Object parm1, System.Object parm2);
-    public delegate System.Object QAction3(System.Object parm1, System.Object parm2, System.Object parm3);
-    public delegate System.Object QAction4(System.Object parm1, System.Object parm2, System.Object parm3, System.Object parm4);
-
     #endregion
 }
 

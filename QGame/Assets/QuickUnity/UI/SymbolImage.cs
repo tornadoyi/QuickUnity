@@ -76,7 +76,7 @@ namespace QuickUnity
                     task = AssetManager.LoadSpriteAsync(name, subName);
                 }
                 
-                while (!task.done) yield return null;
+                yield return task.WaitForFinish();
                 if (task.sprite != null)
                 {
                     image.sprite = task.sprite;

@@ -20,9 +20,7 @@ public class Lua_QuickUnity_HttpDownloadTask : LuaObject {
 			checkType(l,6,out a5);
 			System.Int32 a6;
 			checkType(l,7,out a6);
-			System.Int32 a7;
-			checkType(l,8,out a7);
-			o=new QuickUnity.HttpDownloadTask(a1,a2,a3,a4,a5,a6,a7);
+			o=new QuickUnity.HttpDownloadTask(a1,a2,a3,a4,a5,a6);
 			pushValue(l,true);
 			pushValue(l,o);
 			return 2;
@@ -127,18 +125,6 @@ public class Lua_QuickUnity_HttpDownloadTask : LuaObject {
 			return error(l,e);
 		}
 	}
-	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static public int get_processBytes(IntPtr l) {
-		try {
-			QuickUnity.HttpDownloadTask self=(QuickUnity.HttpDownloadTask)checkSelf(l);
-			pushValue(l,true);
-			pushValue(l,self.processBytes);
-			return 2;
-		}
-		catch(Exception e) {
-			return error(l,e);
-		}
-	}
 	static public void reg(IntPtr l) {
 		getTypeTable(l,"QuickUnity.HttpDownloadTask");
 		addMember(l,"fileSavePath",get_fileSavePath,null,true);
@@ -149,7 +135,6 @@ public class Lua_QuickUnity_HttpDownloadTask : LuaObject {
 		addMember(l,"md5",get_md5,null,true);
 		addMember(l,"fileSize",get_fileSize,null,true);
 		addMember(l,"downloadSize",get_downloadSize,null,true);
-		addMember(l,"processBytes",get_processBytes,null,true);
 		createTypeMetatable(l,constructor, typeof(QuickUnity.HttpDownloadTask),typeof(QuickUnity.HttpTask));
 	}
 }

@@ -9,7 +9,7 @@ namespace SLua
     public partial class LuaDelegation : LuaObject
     {
 
-        static internal int checkDelegate(IntPtr l,int p,out QuickUnity.TaskDoneHandler ua) {
+        static internal int checkDelegate(IntPtr l,int p,out QuickUnity.Task.ProgressCallback ua) {
             int op = extractFunction(l,p);
 			if(LuaDLL.lua_isnil(l,p)) {
 				ua=null;
@@ -17,25 +17,26 @@ namespace SLua
 			}
             else if (LuaDLL.lua_isuserdata(l, p)==1)
             {
-                ua = (QuickUnity.TaskDoneHandler)checkObj(l, p);
+                ua = (QuickUnity.Task.ProgressCallback)checkObj(l, p);
                 return op;
             }
             LuaDelegate ld;
             checkType(l, -1, out ld);
             if(ld.d!=null)
             {
-                ua = (QuickUnity.TaskDoneHandler)ld.d;
+                ua = (QuickUnity.Task.ProgressCallback)ld.d;
                 return op;
             }
 			LuaDLL.lua_pop(l,1);
 			
 			l = LuaState.get(l).L;
-            ua = (bool a1) =>
+            ua = (QuickUnity.Task a1,float a2) =>
             {
                 int error = pushTry(l);
 
 				pushValue(l,a1);
-				ld.pcall(1, error);
+				pushValue(l,a2);
+				ld.pcall(2, error);
 				LuaDLL.lua_settop(l, error-1);
 			};
 			ld.d=ua;

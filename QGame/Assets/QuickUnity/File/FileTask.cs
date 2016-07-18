@@ -7,93 +7,138 @@ namespace QuickUnity
 {
     public class FileReadTask : AsyncTask
     {
+        public class FileReadThreadTask : ThreadTask
+        {
+            public string filePath { get; set; }
+
+            protected override void OnAsyncProcess()
+            {
+                if (string.IsNullOrEmpty(filePath))
+                {
+                    if (filePath == null) filePath = "";
+                    SetFail(string.Format("Invalid file path \'{0}\'", filePath));
+                    return;
+                }
+                if (!File.Exists(filePath))
+                {
+                    SetFail(string.Format("File {0} not exist", filePath));
+                    return;
+                }
+
+
+                QFileStream stream = null;
+                try
+                {
+                    stream = new QFileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    OnProcessStream(stream);
+                }
+                catch (System.Exception e)
+                {
+                    SetFail(e);
+                }
+                finally
+                {
+                    if (stream != null) { stream.Dispose(); stream = null; }
+                }
+            }
+
+            protected virtual void OnProcessStream(System.IO.Stream stream) { }
+        }
+
+
+        public string filePath { get; private set; }
+
         public FileReadTask(string filePath)
         {
-            _filePath = filePath;
+            this.filePath = filePath;
         }
 
-        protected override void OnAsyncProcess()
+        protected override ThreadTask CreateThreadTask() { return new FileReadThreadTask(); }
+
+        protected override void OnSyncParameters(ThreadTask threadTask)
         {
-            if (string.IsNullOrEmpty(_filePath))
-            {
-                if (_filePath == null) _filePath = "";
-                SetResultFailed(string.Format("Invalid file path \'{0}\'", _filePath));
-                return;
-            }
-            if (!File.Exists(_filePath))
-            {
-                SetResultFailed(string.Format("File {0} not exist", _filePath));
-                return;
-            }
-
-
-            QFileStream stream = null;
-            try
-            {
-                stream = new QFileStream(_filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                OnProcessStream(stream);
-            }
-            catch (System.Exception e)
-            {
-                SetResultFailed(e);
-            }
-            finally
-            {
-                if (stream != null) { stream.Dispose(); stream = null; }
-            }
+            var task = threadTask as FileReadThreadTask;
+            task.filePath = filePath;
         }
 
-        protected virtual void OnProcessStream(System.IO.Stream stream) { }
 
-        public string filePath { get { return _filePath; } }
-        protected string _filePath;
     }
 
     public class FileReadTextTask : FileReadTask
     {
+        public class FileReadTextThreadTask : FileReadThreadTask
+        {
+            public Encoding encoding { get; set; }
+            public string text { get; set; }
+
+            protected override void OnProcessStream(System.IO.Stream stream)
+            {
+                StreamReader sr = new StreamReader(stream, encoding);
+                text = sr.ReadToEnd();
+                if (sr != null) { sr.Dispose(); sr = null; }
+            }
+        }
+
+
+        public string text { get; private set; }
+        public Encoding encoding { get; private set; }
+
         public FileReadTextTask(string filePath) : base(filePath)
         {
-            _encoding = Encoding.UTF8;
+            this.encoding = Encoding.UTF8;
         }
 
         public FileReadTextTask(string filePath, Encoding encoding) : base(filePath)
         {
-            _encoding = encoding;
+            this.encoding = encoding;
         }
 
-        protected override void OnProcessStream(System.IO.Stream stream)
+        protected override ThreadTask CreateThreadTask() { return new FileReadTextThreadTask(); }
+
+        protected override void OnSyncParameters(ThreadTask threadTask)
         {
-            StreamReader sr = new StreamReader(stream, _encoding);
-            _text = sr.ReadToEnd();
-            if(sr != null) { sr.Dispose(); sr = null; }
+            var task = threadTask as FileReadTextThreadTask;
+            base.OnSyncParameters(task);
+            task.encoding = encoding;
+            text = task.text;
         }
-
-        
-        public string text { get { return _text; } }
-        protected string _text = string.Empty;
-
-        public Encoding encoding { get { return _encoding; } }
-        protected Encoding _encoding;
     }
 
     public class FileReadBytesTask : FileReadTask
     {
+        public class FileReadBytesThreadTask : FileReadThreadTask
+        {
+            public byte[] bytes { get; private set; }
+
+            protected override void OnProcessStream(System.IO.Stream stream)
+            {
+                BinaryReader br = new BinaryReader(stream);
+                br.BaseStream.Seek(0, SeekOrigin.Begin);
+                bytes = br.ReadBytes((int)br.BaseStream.Length);
+                br.Close(); br = null;
+                if (bytes == null || bytes.Length <= 0)
+                {
+                    SetFail(string.Format("Can not read any bytes from {0}", filePath));
+                }
+            }
+        }
+
+
+        public byte[] bytes { get; private set; }
+
         public FileReadBytesTask(string filePath)
             : base(filePath)
         {
         }
 
-        protected override void OnProcessStream(System.IO.Stream stream)
-        {
-            BinaryReader br = new BinaryReader(stream);
-            br.BaseStream.Seek(0, SeekOrigin.Begin);
-            _bytes = br.ReadBytes((int)br.BaseStream.Length);
-            br.Close(); br = null;
-            if (_bytes == null || _bytes.Length <= 0) SetResultFailed(string.Format("Can not read any bytes from {0}", _filePath));
-        }
+        protected override ThreadTask CreateThreadTask() { return new FileReadBytesThreadTask(); }
 
-        public byte[] bytes { get { return _bytes; } }
-        protected byte[] _bytes;
+        protected override void OnSyncParameters(ThreadTask threadTask)
+        {
+            var task = threadTask as FileReadBytesThreadTask;
+            base.OnSyncParameters(task);
+            bytes = task.bytes;
+        }
     }
 
 }

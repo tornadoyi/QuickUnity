@@ -128,6 +128,8 @@ namespace QuickUnity
 
         public class LoadAudioClipTask : LoadSpecifyAssetTask
         {
+            public AudioClip clip;
+
             public LoadAudioClipTask(string name) : base(name) { }
 
             protected override void OnProcessAsset(UnityEngine.Object asset)
@@ -135,15 +137,16 @@ namespace QuickUnity
                 clip = asset as AudioClip;
                 if(clip == null)
                 {
-                    SetResultFailed(string.Format("Asset type error, type is {0}, expect AudioClip", asset.GetType().Name));
+                    SetFail(string.Format("Asset type error, type is {0}, expect AudioClip", asset.GetType().Name));
                     return;
                 }
             }
-            public AudioClip clip;
         }
 
         public class LoadFontTask : LoadSpecifyAssetTask
         {
+            public Font font;
+
             public LoadFontTask(string name) : base(name) { }
 
             protected override void OnProcessAsset(UnityEngine.Object asset)
@@ -151,15 +154,17 @@ namespace QuickUnity
                 font = asset as Font;
                 if(font == null)
                 {
-                    SetResultFailed(string.Format("Asset type error, type is {0}, expect Font", asset.GetType().Name));
+                    SetFail(string.Format("Asset type error, type is {0}, expect Font", asset.GetType().Name));
                     return;
                 }
             }
-            public Font font;
         }
 
         public class LoadSpriteTask : LoadSpecifyAssetTask
         {
+            public Sprite sprite;
+            protected string subName;
+
             public LoadSpriteTask(string name, string subName) : base(name) { this.subName = subName; }
 
             protected override void OnProcessSubAssets(UnityEngine.Object[] subAssets)
@@ -174,12 +179,12 @@ namespace QuickUnity
                     break;
                 }
             }
-            public Sprite sprite;
-            protected string subName;
         }
 
         public class LoadTextureTask : LoadSpecifyAssetTask
         {
+            public Texture2D texture;
+
             public LoadTextureTask(string name) : base(name) { }
 
             protected override void OnProcessAsset(UnityEngine.Object asset)
@@ -187,15 +192,16 @@ namespace QuickUnity
                 texture = asset as Texture2D;
                 if (texture == null)
                 {
-                    SetResultFailed(string.Format("Asset type error, type is {0}, expect Texture2D", asset.GetType().Name));
+                    SetFail(string.Format("Asset type error, type is {0}, expect Texture2D", asset.GetType().Name));
                     return;
                 }
             }
-            public Texture2D texture;
         }
 
         public class LoadTextTask : LoadSpecifyAssetTask
         {
+            public string text;
+
             public LoadTextTask(string name) : base(name) { }
 
             protected override void OnProcessAsset(UnityEngine.Object asset)
@@ -203,16 +209,17 @@ namespace QuickUnity
                 TextAsset textAsset = asset as TextAsset;
                 if (textAsset == null)
                 {
-                    SetResultFailed(string.Format("Asset type error, type is {0}, expect TextAsset", asset.GetType().Name));
+                    SetFail(string.Format("Asset type error, type is {0}, expect TextAsset", asset.GetType().Name));
                     return;
                 }
                 text = textAsset.text;
             }
-            public string text;
         }
 
         public class LoadBinaryTask : LoadSpecifyAssetTask
         {
+            public byte[] bytes;
+
             public LoadBinaryTask(string name) : base(name) { }
 
             protected override void OnProcessAsset(UnityEngine.Object asset)
@@ -220,32 +227,34 @@ namespace QuickUnity
                 TextAsset textAsset = asset as TextAsset;
                 if (textAsset == null)
                 {
-                    SetResultFailed(string.Format("Asset type error, type is {0}, expect TextAsset", asset.GetType().Name));
+                    SetFail(string.Format("Asset type error, type is {0}, expect TextAsset", asset.GetType().Name));
                     return;
                 }
                 bytes = textAsset.bytes;
             }
-            public byte[] bytes;
+            
         }
 
         public class LoadGameObjectTask : LoadSpecifyAssetTask
         {
+            public GameObject gameObject { get; private set; }
+
             public LoadGameObjectTask(string name) : base(name) { }
             protected override void OnProcessAsset(UnityEngine.Object asset)
             {
                 gameObject = asset as GameObject;
                 if (gameObject == null)
                 {
-                    SetResultFailed(string.Format("Asset type error, type is {0}, expect GameObject", asset.GetType().Name));
+                    SetFail(string.Format("Asset type error, type is {0}, expect GameObject", asset.GetType().Name));
                     return;
                 }
             }
-
-            public GameObject gameObject { get; private set; }
         }
 
         public class LoadSpecifyAssetTask : CoroutineTask
         {
+            protected string assetName;
+
             public LoadSpecifyAssetTask(string name)
             {
                 assetName = name;
@@ -255,10 +264,10 @@ namespace QuickUnity
             {
                 LoadAssetTask task = new LoadAssetTask(assetName);
                 task.Start();
-                yield return task.WaitForDone();
-                if(!task.result)
+                yield return task.WaitForFinish();
+                if(task.fail)
                 {
-                    SetResultFailed(task.error);
+                    SetFail(task.error);
                     yield break;
                 }
                 if (task.asset != null) OnProcessAsset(task.asset);
@@ -269,7 +278,6 @@ namespace QuickUnity
             protected virtual void OnProcessAsset(UnityEngine.Object asset) { }
             protected virtual void OnProcessSubAssets(UnityEngine.Object[] subAssets) { }
 
-            protected string assetName;
         }
 
         #endregion

@@ -20,40 +20,8 @@ public class Lua_QuickUnity_Task : LuaObject {
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
 	static public int Start(IntPtr l) {
 		try {
-			int argc = LuaDLL.lua_gettop(l);
-			if(argc==1){
-				QuickUnity.Task self=(QuickUnity.Task)checkSelf(l);
-				self.Start();
-				pushValue(l,true);
-				return 1;
-			}
-			else if(argc==3){
-				QuickUnity.Task self=(QuickUnity.Task)checkSelf(l);
-				QuickUnity.TaskDoneHandler a1;
-				LuaDelegation.checkDelegate(l,2,out a1);
-				QuickUnity.TaskProcessHandler a2;
-				LuaDelegation.checkDelegate(l,3,out a2);
-				self.Start(a1,a2);
-				pushValue(l,true);
-				return 1;
-			}
-			pushValue(l,false);
-			LuaDLL.lua_pushstring(l,"No matched override function to call");
-			return 2;
-		}
-		catch(Exception e) {
-			return error(l,e);
-		}
-	}
-	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static public int StartAndWaitForDone(IntPtr l) {
-		try {
 			QuickUnity.Task self=(QuickUnity.Task)checkSelf(l);
-			QuickUnity.TaskDoneHandler a1;
-			LuaDelegation.checkDelegate(l,2,out a1);
-			QuickUnity.TaskProcessHandler a2;
-			LuaDelegation.checkDelegate(l,3,out a2);
-			var ret=self.StartAndWaitForDone(a1,a2);
+			var ret=self.Start();
 			pushValue(l,true);
 			pushValue(l,ret);
 			return 2;
@@ -63,10 +31,12 @@ public class Lua_QuickUnity_Task : LuaObject {
 		}
 	}
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static public int WaitForDone(IntPtr l) {
+	static public int Finish(IntPtr l) {
 		try {
 			QuickUnity.Task self=(QuickUnity.Task)checkSelf(l);
-			var ret=self.WaitForDone();
+			QuickUnity.Task.FinishCallback a1;
+			LuaDelegation.checkDelegate(l,2,out a1);
+			var ret=self.Finish(a1);
 			pushValue(l,true);
 			pushValue(l,ret);
 			return 2;
@@ -76,39 +46,29 @@ public class Lua_QuickUnity_Task : LuaObject {
 		}
 	}
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static public int AddDoneCallback(IntPtr l) {
+	static public int Success(IntPtr l) {
 		try {
 			QuickUnity.Task self=(QuickUnity.Task)checkSelf(l);
-			QuickUnity.TaskDoneHandler a1;
+			QuickUnity.Task.FinishCallback a1;
 			LuaDelegation.checkDelegate(l,2,out a1);
-			self.AddDoneCallback(a1);
+			var ret=self.Success(a1);
 			pushValue(l,true);
-			return 1;
+			pushValue(l,ret);
+			return 2;
 		}
 		catch(Exception e) {
 			return error(l,e);
 		}
 	}
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static public int AddProgressCallback(IntPtr l) {
+	static public int Fail(IntPtr l) {
 		try {
 			QuickUnity.Task self=(QuickUnity.Task)checkSelf(l);
-			QuickUnity.TaskProcessHandler a1;
+			QuickUnity.Task.FinishCallback a1;
 			LuaDelegation.checkDelegate(l,2,out a1);
-			self.AddProgressCallback(a1);
+			var ret=self.Fail(a1);
 			pushValue(l,true);
-			return 1;
-		}
-		catch(Exception e) {
-			return error(l,e);
-		}
-	}
-	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static public int get_progress(IntPtr l) {
-		try {
-			QuickUnity.Task self=(QuickUnity.Task)checkSelf(l);
-			pushValue(l,true);
-			pushValue(l,self.progress);
+			pushValue(l,ret);
 			return 2;
 		}
 		catch(Exception e) {
@@ -116,11 +76,14 @@ public class Lua_QuickUnity_Task : LuaObject {
 		}
 	}
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static public int get_result(IntPtr l) {
+	static public int Cancel(IntPtr l) {
 		try {
 			QuickUnity.Task self=(QuickUnity.Task)checkSelf(l);
+			QuickUnity.Task.FinishCallback a1;
+			LuaDelegation.checkDelegate(l,2,out a1);
+			var ret=self.Cancel(a1);
 			pushValue(l,true);
-			pushValue(l,self.result);
+			pushValue(l,ret);
 			return 2;
 		}
 		catch(Exception e) {
@@ -128,11 +91,14 @@ public class Lua_QuickUnity_Task : LuaObject {
 		}
 	}
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static public int get_error(IntPtr l) {
+	static public int Timeout(IntPtr l) {
 		try {
 			QuickUnity.Task self=(QuickUnity.Task)checkSelf(l);
+			QuickUnity.Task.FinishCallback a1;
+			LuaDelegation.checkDelegate(l,2,out a1);
+			var ret=self.Timeout(a1);
 			pushValue(l,true);
-			pushValue(l,self.error);
+			pushValue(l,ret);
 			return 2;
 		}
 		catch(Exception e) {
@@ -140,11 +106,39 @@ public class Lua_QuickUnity_Task : LuaObject {
 		}
 	}
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static public int get_ready(IntPtr l) {
+	static public int Progress(IntPtr l) {
+		try {
+			QuickUnity.Task self=(QuickUnity.Task)checkSelf(l);
+			QuickUnity.Task.ProgressCallback a1;
+			LuaDelegation.checkDelegate(l,2,out a1);
+			var ret=self.Progress(a1);
+			pushValue(l,true);
+			pushValue(l,ret);
+			return 2;
+		}
+		catch(Exception e) {
+			return error(l,e);
+		}
+	}
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static public int WaitForFinish(IntPtr l) {
+		try {
+			QuickUnity.Task self=(QuickUnity.Task)checkSelf(l);
+			var ret=self.WaitForFinish();
+			pushValue(l,true);
+			pushValue(l,ret);
+			return 2;
+		}
+		catch(Exception e) {
+			return error(l,e);
+		}
+	}
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static public int get_sleep(IntPtr l) {
 		try {
 			QuickUnity.Task self=(QuickUnity.Task)checkSelf(l);
 			pushValue(l,true);
-			pushValue(l,self.ready);
+			pushValue(l,self.sleep);
 			return 2;
 		}
 		catch(Exception e) {
@@ -164,11 +158,11 @@ public class Lua_QuickUnity_Task : LuaObject {
 		}
 	}
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static public int get_done(IntPtr l) {
+	static public int get_finish(IntPtr l) {
 		try {
 			QuickUnity.Task self=(QuickUnity.Task)checkSelf(l);
 			pushValue(l,true);
-			pushValue(l,self.done);
+			pushValue(l,self.finish);
 			return 2;
 		}
 		catch(Exception e) {
@@ -176,11 +170,85 @@ public class Lua_QuickUnity_Task : LuaObject {
 		}
 	}
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static public int get_lastTime(IntPtr l) {
+	static public int get_success(IntPtr l) {
 		try {
 			QuickUnity.Task self=(QuickUnity.Task)checkSelf(l);
 			pushValue(l,true);
-			pushValue(l,self.lastTime);
+			pushValue(l,self.success);
+			return 2;
+		}
+		catch(Exception e) {
+			return error(l,e);
+		}
+	}
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static public int get_fail(IntPtr l) {
+		try {
+			QuickUnity.Task self=(QuickUnity.Task)checkSelf(l);
+			pushValue(l,true);
+			pushValue(l,self.fail);
+			return 2;
+		}
+		catch(Exception e) {
+			return error(l,e);
+		}
+	}
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static public int get_progress(IntPtr l) {
+		try {
+			QuickUnity.Task self=(QuickUnity.Task)checkSelf(l);
+			pushValue(l,true);
+			pushValue(l,self.progress);
+			return 2;
+		}
+		catch(Exception e) {
+			return error(l,e);
+		}
+	}
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static public int get_error(IntPtr l) {
+		try {
+			QuickUnity.Task self=(QuickUnity.Task)checkSelf(l);
+			pushValue(l,true);
+			pushValue(l,self.error);
+			return 2;
+		}
+		catch(Exception e) {
+			return error(l,e);
+		}
+	}
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static public int get_retryCount(IntPtr l) {
+		try {
+			QuickUnity.Task self=(QuickUnity.Task)checkSelf(l);
+			pushValue(l,true);
+			pushValue(l,self.retryCount);
+			return 2;
+		}
+		catch(Exception e) {
+			return error(l,e);
+		}
+	}
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static public int set_retryCount(IntPtr l) {
+		try {
+			QuickUnity.Task self=(QuickUnity.Task)checkSelf(l);
+			int v;
+			checkType(l,2,out v);
+			self.retryCount=v;
+			pushValue(l,true);
+			return 1;
+		}
+		catch(Exception e) {
+			return error(l,e);
+		}
+	}
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static public int get_curRetryCount(IntPtr l) {
+		try {
+			QuickUnity.Task self=(QuickUnity.Task)checkSelf(l);
+			pushValue(l,true);
+			pushValue(l,self.curRetryCount);
 			return 2;
 		}
 		catch(Exception e) {
@@ -238,11 +306,23 @@ public class Lua_QuickUnity_Task : LuaObject {
 		}
 	}
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static public int get_state(IntPtr l) {
+	static public int get_costTime(IntPtr l) {
 		try {
 			QuickUnity.Task self=(QuickUnity.Task)checkSelf(l);
 			pushValue(l,true);
-			pushEnum(l,(int)self.state);
+			pushValue(l,self.costTime);
+			return 2;
+		}
+		catch(Exception e) {
+			return error(l,e);
+		}
+	}
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static public int get_hasTimeout(IntPtr l) {
+		try {
+			QuickUnity.Task self=(QuickUnity.Task)checkSelf(l);
+			pushValue(l,true);
+			pushValue(l,self.hasTimeout);
 			return 2;
 		}
 		catch(Exception e) {
@@ -252,21 +332,27 @@ public class Lua_QuickUnity_Task : LuaObject {
 	static public void reg(IntPtr l) {
 		getTypeTable(l,"QuickUnity.Task");
 		addMember(l,Start);
-		addMember(l,StartAndWaitForDone);
-		addMember(l,WaitForDone);
-		addMember(l,AddDoneCallback);
-		addMember(l,AddProgressCallback);
-		addMember(l,"progress",get_progress,null,true);
-		addMember(l,"result",get_result,null,true);
-		addMember(l,"error",get_error,null,true);
-		addMember(l,"ready",get_ready,null,true);
+		addMember(l,Finish);
+		addMember(l,Success);
+		addMember(l,Fail);
+		addMember(l,Cancel);
+		addMember(l,Timeout);
+		addMember(l,Progress);
+		addMember(l,WaitForFinish);
+		addMember(l,"sleep",get_sleep,null,true);
 		addMember(l,"running",get_running,null,true);
-		addMember(l,"done",get_done,null,true);
-		addMember(l,"lastTime",get_lastTime,null,true);
+		addMember(l,"finish",get_finish,null,true);
+		addMember(l,"success",get_success,null,true);
+		addMember(l,"fail",get_fail,null,true);
+		addMember(l,"progress",get_progress,null,true);
+		addMember(l,"error",get_error,null,true);
+		addMember(l,"retryCount",get_retryCount,set_retryCount,true);
+		addMember(l,"curRetryCount",get_curRetryCount,null,true);
 		addMember(l,"startTime",get_startTime,null,true);
 		addMember(l,"endTime",get_endTime,null,true);
 		addMember(l,"timeout",get_timeout,set_timeout,true);
-		addMember(l,"state",get_state,null,true);
+		addMember(l,"costTime",get_costTime,null,true);
+		addMember(l,"hasTimeout",get_hasTimeout,null,true);
 		createTypeMetatable(l,constructor, typeof(QuickUnity.Task));
 	}
 }

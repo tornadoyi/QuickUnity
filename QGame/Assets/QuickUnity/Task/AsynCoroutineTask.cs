@@ -28,7 +28,7 @@ namespace QuickUnity
         {
             if (m_asynDelegate != null || m_asynRet != null)
             {
-                Done();
+                SetFinish();
                 return;
             }
 
@@ -69,7 +69,8 @@ namespace QuickUnity
                 Debug.LogError(e);
             }
 
-            Done();
+            // Finish,  Note: Must be the end of this function
+            SetFinish();
         }
 
         #endregion

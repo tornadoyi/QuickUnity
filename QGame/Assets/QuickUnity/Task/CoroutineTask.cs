@@ -12,6 +12,8 @@ namespace QuickUnity
     /// </summary>
     public class CoroutineTask : Task
     {
+        private IEnumerator method;
+
         protected override void OnStart()
         {
             method = OnProcess();
@@ -29,7 +31,7 @@ namespace QuickUnity
 
             IEnumerator e = method;
 
-            while (!done)
+            while (!finish)
             {
                 if (e != null && e.MoveNext())
                 {
@@ -41,9 +43,8 @@ namespace QuickUnity
                 }
             }
 
-            Done();
+            // Finish,  Note: Must be the end of this function
+            SetFinish();
         }
-
-        private IEnumerator method;
     }
 }

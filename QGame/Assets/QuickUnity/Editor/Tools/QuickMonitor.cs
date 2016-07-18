@@ -59,7 +59,8 @@ namespace QuickUnity
                     if (task == null) GUILayout.Button("State", "miniButtonMid", option);
                     else
                     {
-                        EditorGUILayout.LabelField(task.state.ToString(), style, option);
+                        var state = task.sleep ? "Sleep" : task.running ? "Running" : "Finish";
+                        EditorGUILayout.LabelField(state, style, option);
                     }
                 }
 
@@ -68,7 +69,7 @@ namespace QuickUnity
                     if (task == null) GUILayout.Button("Last time", "miniButtonRight");
                     else
                     {
-                        var content = string.Format("{0}s", task.lastTime);
+                        var content = string.Format("{0}s", task.costTime);
                         EditorGUILayout.LabelField(content, style);
                     }
                 }

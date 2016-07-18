@@ -213,7 +213,7 @@ namespace QuickUnity
                     case QConfig.Asset.AssetPathType.Builtin:
                         {
                             WWWReadTextTask task = new WWWReadTextTask(filePath);
-                            yield return task.StartAndWaitForDone();
+                            yield return task.Start().WaitForFinish();
                             if (string.IsNullOrEmpty(task.text)) yield break;
                             table.FromJson(task.text, assetPathType);
 
@@ -221,7 +221,7 @@ namespace QuickUnity
                     case QConfig.Asset.AssetPathType.External:
                         {
                             FileReadTextTask task = new FileReadTextTask(filePath);
-                            yield return task.StartAndWaitForDone();
+                            yield return task.Start().WaitForFinish();
                             if (string.IsNullOrEmpty(task.text)) yield break;
                             table.FromJson(task.text, assetPathType);
 

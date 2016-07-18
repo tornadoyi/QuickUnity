@@ -37,7 +37,7 @@ namespace QuickUnity
         {
             if(string.IsNullOrEmpty(url))
             {
-                SetResultFailed("Invalid url");
+                SetFail("Invalid url");
                 yield break;
             }
 
@@ -64,7 +64,7 @@ namespace QuickUnity
 
             while (!www.isDone)
             {
-                Progress(www.uploadProgress + www.progress);
+                SetProgress(www.uploadProgress + www.progress);
                 if (hasTimeout)
                 {
                     www.Dispose();
@@ -79,7 +79,7 @@ namespace QuickUnity
 
             if (!string.IsNullOrEmpty(www.error))
             {
-                SetResultFailed(www.error);
+                SetFail(www.error);
                 www.Dispose();
                 www = null;
                 yield break;
@@ -130,7 +130,7 @@ namespace QuickUnity
         protected override IEnumerator OnProcessWWW(WWW www)
         {
             _bytes = www.bytes;
-            if (_bytes == null || _bytes.Length <= 0) { SetResultFailed(string.Format("WWW can not read any bytes from {0}", _url)); }
+            if (_bytes == null || _bytes.Length <= 0) { SetFail(string.Format("WWW can not read any bytes from {0}", _url)); }
             yield break;
         }
 
@@ -161,11 +161,11 @@ namespace QuickUnity
                 stream = new MemoryStream(www.bytes);
                 sr = new StreamReader(stream, Encoding.UTF8);
                 _text = sr.ReadToEnd();
-                if (string.IsNullOrEmpty(_text)) { SetResultFailed(string.Format("WWW can not read any text from {0}", _url)); }
+                if (string.IsNullOrEmpty(_text)) { SetFail(string.Format("WWW can not read any text from {0}", _url)); }
             }
             catch (System.Exception e)
             {
-                SetResultFailed(e);
+                SetFail(e);
             }
             finally
             {
@@ -209,7 +209,7 @@ namespace QuickUnity
                 _assetBundle = request.assetBundle;
                 if (isCheckMD5) _md5 = Utility.MD5.Compute(bytes);
             }
-            if (_assetBundle == null) { SetResultFailed(string.Format("WWW can not read AssetBundle from {0}", _url)); }
+            if (_assetBundle == null) { SetFail(string.Format("WWW can not read AssetBundle from {0}", _url)); }
             yield break;
         }
 
@@ -248,7 +248,7 @@ namespace QuickUnity
                 string tmpFile = _fileSavePath + QConfig.Network.tempDownloadFileSuffix;
                 if (!FileManager.CreateDirectory(fileSavePath))
                 {
-                    SetResultFailed(string.Format("Can Not Create Directory For {0}", fileSavePath));
+                    SetFail(string.Format("Can Not Create Directory For {0}", fileSavePath));
                     yield break;
                 }
 
@@ -268,7 +268,7 @@ namespace QuickUnity
                 _md5 = Utility.MD5.Compute(fs);
                 if (!string.IsNullOrEmpty(expectMD5) && _md5 != expectMD5)
                 {
-                    SetResultFailed(string.Format("Check Md5 {0} Failed from {1}", tmpFile, _url));
+                    SetFail(string.Format("Check Md5 {0} Failed from {1}", tmpFile, _url));
                     success = false;
                 }
 
@@ -288,7 +288,7 @@ namespace QuickUnity
             }
             catch(Exception e)
             {
-                SetResultFailed(e);
+                SetFail(e);
                 success = false;
             }
             finally

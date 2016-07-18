@@ -73,10 +73,7 @@ namespace QuickUnity
 
             // Start download
             downloadTask = new DownloadAssetBundleTask(this, true);
-            downloadTask.doneHandler += (result) =>
-            {
-                downloadTask = null;
-            };
+            downloadTask.Finish(_ => downloadTask = null);
             downloadTask.Start();
             return downloadTask;
         }
@@ -103,13 +100,13 @@ namespace QuickUnity
 
             // Create task
             loadTask = new LoadOrDownloadAssetBundleTask(this);
-            loadTask.doneHandler += (result) =>
+            loadTask.Finish((result) =>
             {
                 var task = loadTask;
                 loadTask = null;
                 assetBundle = task.assetBundle;
-                if (assetBundle != null) bundleLoad.Invoke(this);
-            };
+                if (assetBundle != null) bundleLoad(this);
+            });
             loadTask.Start();
             return loadTask;
         }
@@ -276,6 +273,9 @@ namespace QuickUnity
 
         protected class LoadOrDownloadAssetBundleTask : CoroutineTask
         {
+            public AssetBundleInfo assetBundleInfo { get; private set; }
+            public AssetBundle assetBundle { get; private set; }
+
             public LoadOrDownloadAssetBundleTask(AssetBundleInfo assetBundleInfo)
             {
                 this.assetBundleInfo = assetBundleInfo;
@@ -293,10 +293,10 @@ namespace QuickUnity
                 // Download (self and dependencies)
                 {
                     var task = assetBundleInfo.Download();
-                    yield return task.WaitForDone();
-                    if (!task.result)
+                    yield return task.WaitForFinish();
+                    if (task.fail)
                     {
-                        SetResultFailed(string.Format("Load AssetBundle {0} fialed", assetBundleInfo.name), task.error);
+                        SetFail(string.Format("Load AssetBundle {0} fialed", assetBundleInfo.name), task.error);
                         yield break;
                     }
                 }
@@ -316,9 +316,9 @@ namespace QuickUnity
                     for(int i=0; i<list.Count; ++i)
                     {
                         var task = list[i];
-                        yield return task.WaitForDone();
-                        if (task.result) continue;
-                        SetResultFailed(string.Format("Load AssetBundle {0} fialed", assetBundleInfo.name), task.error);
+                        yield return task.WaitForFinish();
+                        if (task.success) continue;
+                        SetFail(string.Format("Load AssetBundle {0} fialed", assetBundleInfo.name), task.error);
                         yield break;
                     }
                 }
@@ -327,23 +327,35 @@ namespace QuickUnity
                 // Load self when all dependencies has loaded before
                 {
                     var task = new LoadAssetBundleTask(assetBundleInfo.fileCachePath, assetBundleInfo.pathType, assetBundleInfo.md5);
-                    yield return task.StartAndWaitForDone();
-                    if(!task.result)
+                    yield return task.Start().WaitForFinish();
+                    if(task.fail)
                     {
-                        SetResultFailed(string.Format("Load AssetBundle {0} fialed", assetBundleInfo.name), task.error);
+                        SetFail(string.Format("Load AssetBundle {0} fialed", assetBundleInfo.name), task.error);
                         yield break;
                     }
                     assetBundle = task.assetBundle;
                 }
             }
-
-            public AssetBundleInfo assetBundleInfo { get; private set; }
-            public AssetBundle assetBundle { get; private set; }
         }
 
 
         protected class LoadAssetBundleTask : CoroutineTask
         {
+            public AssetBundle assetBundle { get { return _assetBundle; } }
+            protected AssetBundle _assetBundle;
+
+            public string path { get { return _path; } }
+            protected string _path;
+
+            public string md5 { get { return _md5; } }
+            protected string _md5 = string.Empty;
+
+            public QConfig.Asset.AssetPathType pathType { get { return _pathType; } }
+            protected QConfig.Asset.AssetPathType _pathType;
+
+            public string expectMD5 { get { return _expectMD5; } }
+            protected string _expectMD5 = string.Empty;
+
             public LoadAssetBundleTask(string path, QConfig.Asset.AssetPathType pathType)
             {
                 _path = path;
@@ -366,10 +378,10 @@ namespace QuickUnity
                     case QConfig.Asset.AssetPathType.External:
                         {
                             FileReadBytesTask task = new FileReadBytesTask(path);
-                            yield return task.StartAndWaitForDone();
+                            yield return task.Start().WaitForFinish();
                             if (task.bytes == null)
                             {
-                                SetResultFailed(string.Format("Can not load bundle from path {0}", _path), task.error);
+                                SetFail(string.Format("Can not load bundle from path {0}", _path), task.error);
                                 yield break;
                             }
                             bytes = task.bytes;
@@ -380,10 +392,10 @@ namespace QuickUnity
                     case QConfig.Asset.AssetPathType.Builtin:
                         {
                             WWWReadBytesTask task = HttpManager.GetBytes(path, QConfig.Network.wwwReadFileTimeout);
-                            yield return task.WaitForDone();
+                            yield return task.WaitForFinish();
                             if (task.bytes == null)
                             {
-                                SetResultFailed(string.Format("Can not load bundle from path {0}", _path), task.error);
+                                SetFail(string.Format("Can not load bundle from path {0}", _path), task.error);
                                 yield break;
                             }
                             bytes = task.bytes;
@@ -392,7 +404,7 @@ namespace QuickUnity
 
                     default:
                         {
-                            SetResultFailed(string.Format("Invalid path type {0}", pathType.GetType().Name));
+                            SetFail(string.Format("Invalid path type {0}", pathType.GetType().Name));
                         }
                         yield break;
                 }
@@ -404,7 +416,7 @@ namespace QuickUnity
                     _md5 = Utility.MD5.Compute(bytes);
                     if (_md5 != _expectMD5)
                     {
-                        SetResultFailed(string.Format("{0} MD5 check failed, expected {1}, current {2}", _path, _expectMD5, _md5));
+                        SetFail(string.Format("{0} MD5 check failed, expected {1}, current {2}", _path, _expectMD5, _md5));
                         System.IO.File.Delete(path);
                         yield break;
                     }
@@ -414,29 +426,17 @@ namespace QuickUnity
                 _assetBundle = request.assetBundle;
                 if (_assetBundle == null)
                 {
-                    SetResultFailed(string.Format("Create bundle from memory failed, path:{0}", _path));
+                    SetFail(string.Format("Create bundle from memory failed, path:{0}", _path));
                     yield break;
                 }
             }
-
-            public AssetBundle assetBundle { get { return _assetBundle; } }
-            protected AssetBundle _assetBundle;
-
-            public string path { get { return _path; } }
-            protected string _path;
-
-            public string md5 { get { return _md5; } }
-            protected string _md5 = string.Empty;
-
-            public QConfig.Asset.AssetPathType pathType { get { return _pathType; } }
-            protected QConfig.Asset.AssetPathType _pathType;
-
-            public string expectMD5 { get { return _expectMD5; } }
-            protected string _expectMD5 = string.Empty;
         }
 
         public class DownloadAssetBundleTask : CoroutineTask
         {
+            public AssetBundleInfo assetBundleInfo { get; private set; }
+            public bool withDepend { get; private set; }
+
             public DownloadAssetBundleTask(AssetBundleInfo info, bool withDepend)
             {
                 this.assetBundleInfo = info;
@@ -462,10 +462,10 @@ namespace QuickUnity
                 if(assetBundleInfo.isExternal && !assetBundleInfo.fileExists)
                 {
                     var task = HttpManager.Download(assetBundleInfo.fileDownloadUrl, assetBundleInfo.fileCachePath, assetBundleInfo.md5, assetBundleInfo.size);
-                    yield return task.WaitForDone();
-                    if (!task.result)
+                    yield return task.WaitForFinish();
+                    if (task.fail)
                     {
-                        SetResultFailed(string.Format("Download AssetBundle failed, url:{0} ", assetBundleInfo.fileDownloadUrl), task.error);
+                        SetFail(string.Format("Download AssetBundle failed, url:{0} ", assetBundleInfo.fileDownloadUrl), task.error);
                         yield break;
                     }
                 }
@@ -476,16 +476,13 @@ namespace QuickUnity
                     for(int i=0; i<dependTaskList.Count; ++i)
                     {
                         var task = dependTaskList[i];
-                        yield return task.WaitForDone();
-                        if (task.result) continue;
-                        SetResultFailed("Depend AssetBundle download failed ", task.error);
+                        yield return task.WaitForFinish();
+                        if (task.success) continue;
+                        SetFail("Depend AssetBundle download failed ", task.error);
                         yield break;
                     }
                 }
             }
-
-            public AssetBundleInfo assetBundleInfo { get; private set; }
-            public bool withDepend { get; private set; }
         }
 
         #endregion

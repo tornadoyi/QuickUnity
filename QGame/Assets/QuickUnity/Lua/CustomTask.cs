@@ -10,20 +10,10 @@ namespace QuickUnity
             // Nothing to do
         }
 
-        public void SetResultFailed(string error)
-        {
-            base.SetResultFailed(error);
-        }
-
-        new public void Done()
-        {
-            base.Done();
-        }
-
-        new public void Error(string error)
-        {
-            base.Error(error);
-        }
+        new public void SetSuccess() { base.SetSuccess(); SetFinish(); }
+        new public void SetFail(string error) { base.SetFail(error); SetFinish(); }
+        new public void SetCancel(string error = default(string)) { base.SetCancel(error); SetFinish(); }
+        new public void SetTimeout(string error = default(string)) { base.SetTimeout(error); SetFinish(); }
     }
 }
 
