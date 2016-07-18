@@ -5,7 +5,7 @@ import "System"
 import "UnityEngine"
 import "UnityEngine.SceneManagement"
 import "QuickUnity"
-require "Assets/_AssetBundleResources/Lua/Common/Config"
+require "Assets/_Assets/Lua/Common/Config"
 
 
 print("Enter lua success")

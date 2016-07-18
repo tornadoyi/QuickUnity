@@ -1,8 +1,8 @@
 
 
 -- Load all scripts
-local loader = require "Assets/_AssetBundleResources/Lua/Common/ScriptLoader"
-loader("Assets/_AssetBundleResources/Lua")
+local loader = require "Assets/_Assets/Lua/Common/ScriptLoader"
+loader("Assets/_Assets/Lua")
 
 -- Class define
 Config = class("Config")

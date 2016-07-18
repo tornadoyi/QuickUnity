@@ -143,7 +143,7 @@ local function index(ud,k)
         end
         t = rawget(t,'__parent')
     until t==nil
-    error('Can not find '..k)
+    --error('Can not find '..k)
 end
 
 return index

@@ -31,7 +31,6 @@ namespace QuickUnity
         protected Stack<LuaLoaderDelegate> loaderStack = new Stack<LuaLoaderDelegate>();
 
 
-
         void Update()
         {
             if (!inited)
@@ -51,6 +50,7 @@ namespace QuickUnity
         {
             var task = new CustomTask();
             instance.init(null, () => { task.Done(); });
+            LuaState.loaderDelegate = instance.InnerLoaderDelegate;
             return task;
         }
 
@@ -74,6 +74,22 @@ namespace QuickUnity
         public static void PopLuaLoader()
         {
             instance.loaderStack.Pop();
+        }
+
+        byte[] InnerLoaderDelegate(string fn)
+        {
+            if (loaderStack.Count <= 0)
+            {
+                Debug.LogError("No Self_Define Lua Load Delegate");
+                return null;
+            }
+            var loader = loaderStack.Peek();
+            if (loader == null)
+            {
+                Debug.LogError("No Self_Define Lua Load Delegate");
+                return null;
+            }
+            return loader(fn);
         }
 
         public void init(Action<int> tick, System.Action complete, LuaSvrFlag flag = LuaSvrFlag.LSF_BASIC)

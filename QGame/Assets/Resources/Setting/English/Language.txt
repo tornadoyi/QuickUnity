@@ -1,0 +1,11 @@
+ERROR = Error
+ERROR_UNKONWN = Unkown error
+OK = OK
+CANCEL = Cancel
+TIPS = Tips
+ERROR_LOAD_FAIL = Setting load failed
+FETCH_ERROR = Fetch new version failed
+STORE_UPDATE = Press to update by store
+DYNAMIC_UPDATE = Press to dynamic update
+CHOOSE_UPDATE = Press ok to dynamic update\nPress cancel to give up
+DOWNLOAD_FAIL = Download failed, please press to retry

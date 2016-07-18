@@ -1,0 +1,18 @@
+## ------------------------------------
+## Setting for Spiral
+## ------------------------------------
+
+login_server_url : http://10.130.137.64:8020
+
+cdn_url: http://10.130.137.64/static
+
+app_version: v0.1
+
+
+# 0: ALL 1: AssetWithoutLua 2: None
+asset_bundle_level: 2
+
+
+defualt_language: ChineseSimplified
+
+support_language: ChineseSimplified | English 

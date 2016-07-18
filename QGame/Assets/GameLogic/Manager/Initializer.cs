@@ -17,11 +17,17 @@ public class Initializer : MonoBehaviour {
             QuickManager.Start();
         }
 
+        Setting.Load();
+
         yield return LuaEngine.StartAsync().WaitForDone();
+
+        LuaLoaderHelper.PushLuaLoader("ss");
 
         QConfig.Asset.loadAssetFromAssetBundle = false;
         LuaEngine.enableLuaComponent = true;
         LuaEngine.DoFile("Assets/_Assets/Lua/AppDelegate");
+
+        LuaLoaderHelper.PopLuaLoader();
 
         yield return null;
     }

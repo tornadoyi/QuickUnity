@@ -1,0 +1,11 @@
+ERROR = 錯誤
+ERROR_UNKONWN = 未知錯誤
+OK = 确定
+CANCEL = 取消
+TIPS = 提示
+ERROR_LOAD_FAIL = 設定檔加載失敗
+FETCH_ERROR = 獲取最新版本失敗
+STORE_UPDATE = 點擊從商店更新
+DYNAMIC_UPDATE = 點擊進行動態更新
+CHOOSE_UPDATE = 點擊確定進行動態更新\n點擊取消放弃更新
+DOWNLOAD_FAIL = 下載失敗，點擊重試

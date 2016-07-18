@@ -1,0 +1,11 @@
+ERROR = 错误
+ERROR_UNKONWN = 未知错误
+TIPS = 提示
+OK = 确定
+CANCEL = 取消
+ERROR_LOAD_FAIL = 配置文件加载失败
+FETCH_ERROR = 获取最新版本失败
+STORE_UPDATE = 点击从商店更新
+DYNAMIC_UPDATE = 点击进行动态更新
+CHOOSE_UPDATE = 点击确定进行动态更新\n点击取消放弃更新
+DOWNLOAD_FAIL = 下载失败，点击重试
