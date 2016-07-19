@@ -308,6 +308,20 @@ public class Lua_QuickUnity_FileManager : LuaObject {
 			return error(l,e);
 		}
 	}
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static public int FormatLinuxPathSeparator_s(IntPtr l) {
+		try {
+			System.String a1;
+			checkType(l,1,out a1);
+			var ret=QuickUnity.FileManager.FormatLinuxPathSeparator(a1);
+			pushValue(l,true);
+			pushValue(l,ret);
+			return 2;
+		}
+		catch(Exception e) {
+			return error(l,e);
+		}
+	}
 	static public void reg(IntPtr l) {
 		getTypeTable(l,"QuickUnity.FileManager");
 		addMember(l,PathCombine_s);
@@ -327,6 +341,7 @@ public class Lua_QuickUnity_FileManager : LuaObject {
 		addMember(l,SetNoBackupFlag_s);
 		addMember(l,ResetNoBackupFlag_s);
 		addMember(l,CopyPath_s);
+		addMember(l,FormatLinuxPathSeparator_s);
 		createTypeMetatable(l,constructor, typeof(QuickUnity.FileManager));
 	}
 }

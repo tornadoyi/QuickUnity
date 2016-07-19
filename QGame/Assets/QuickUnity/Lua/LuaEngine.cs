@@ -46,7 +46,7 @@ namespace QuickUnity
             LuaTimer.tick(Time.deltaTime);
         }
 
-        public static Task StartAsync()
+        public static Task Start()
         {
             var task = new CustomTask();
             instance.init(null, () => { task.SetSuccess(); });
@@ -92,7 +92,7 @@ namespace QuickUnity
             return loader(fn);
         }
 
-        public void init(Action<int> tick, System.Action complete, LuaSvrFlag flag = LuaSvrFlag.LSF_BASIC)
+        protected void init(Action<int> tick, System.Action complete, LuaSvrFlag flag = LuaSvrFlag.LSF_BASIC)
         {
             LuaState luaState = new LuaState();
             this._luaState = luaState;

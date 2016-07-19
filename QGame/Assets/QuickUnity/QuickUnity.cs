@@ -30,8 +30,8 @@ namespace QuickUnity
             qObject.AddComponent<TaskManager>();
             qObject.AddComponent<AssetManager>();
             qObject.AddComponent<SocketManager>();
-            qObject.AddComponent<LuaEngine>();
             qObject.AddComponent<HttpManager>();
+            qObject.AddComponent<LuaEngine>();
 
             _isInit = true;
         }

@@ -17,9 +17,34 @@ public class Initializer : MonoBehaviour {
             QuickManager.Start();
         }
 
+        // Load setting
         Setting.Load();
 
-        yield return LuaEngine.StartAsync().WaitForFinish();
+        // Start lua engine
+        yield return LuaEngine.Start().WaitForFinish();
+
+        // Download asset config
+        {
+            var task = HttpManager.Download(
+                FileManager.PathCombine(Setting.cdnUrl, Setting.assetTableFileName),
+                FileManager.PathCombine(Setting.downloadCachePath, Setting.assetTableFileName));
+            yield return task.WaitForFinish();
+            if(task.fail)
+            {
+                Debug.LogError("Download asset config fail");
+            }
+        }
+
+        // Download lua
+        {
+            var task = AssetManager.Start(
+                Setting.streamingAssetsAssetPath,
+                Setting.downloadCachePath,
+                Setting.cdnUrl,
+                string.Empty,
+                Setting.serverTableFilePath);
+            yield return task.WaitForFinish();
+        }
 
         LuaLoaderHelper.PushLuaLoader("ss");
 

@@ -268,7 +268,7 @@ namespace QuickUnity
 
         private void SetResult(Result result, ErrorCode errorCode, string error)
         {
-            if (result == Result.None) return;
+            if (this.result != Result.None) return;
             this.result = result;
             this.errorCode = errorCode;
             this.error = error;
@@ -285,7 +285,7 @@ namespace QuickUnity
                 item.callback(this);
             }
             finishCallbacks.Clear();
-            progressCallbacks.Clear();
+            if(progressCallbacks != null) progressCallbacks.Clear();
         }
 
         private void NotifyProgressCallbacks()

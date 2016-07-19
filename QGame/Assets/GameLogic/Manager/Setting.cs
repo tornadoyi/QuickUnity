@@ -39,7 +39,7 @@ public class Setting : Singleton<Setting>
 
     public static string latestVersionFileUrl { get { return FileManager.PathCombine(loginServerUrl, platformName, "spiral.version"); } }
 
-    public static string assetTableFileName = "asset_table.json";
+    public static string assetTableFileName = "asset_table.yml";
 
     public static string languageFilePath = "Setting/Language";
 

@@ -41,7 +41,7 @@ namespace QuickUnity
                 {
                     SetFail(e);
                 }
-
+                if(result == 0) { SetSuccess(); }
             }
 
             protected void SetSuccess() { SetResult(Result.Success, ErrorCode.None, string.Empty); }
@@ -52,7 +52,7 @@ namespace QuickUnity
             protected void SetProgress(float progress) { this.progress = progress; }
             private void SetResult(Result result, ErrorCode errorCode, string error)
             {
-                if (result != Result.None) return;
+                if (this.result != 0) return;
                 this.result = (int)result;
                 this.errorCode = (int)errorCode;
                 this.error = error;
@@ -67,10 +67,10 @@ namespace QuickUnity
 
         protected override void OnStart()
         {
-            TaskManager.CoroutineTask(new TaskManager.CoroutineTaskDelegate(this.WaitThreadFinish));
             threadTask = CreateThreadTask();
             threadTask.SetMasterTask(this);
             OnSyncParameters(threadTask);
+            TaskManager.CoroutineTask(new TaskManager.CoroutineTaskDelegate(this.WaitThreadFinish));
             Toub.Threading.ManagedThreadPool.QueueUserWorkItem(new WaitCallback(threadTask.AsynRun));
             return;
         }

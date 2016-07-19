@@ -18,27 +18,9 @@ public class Lua_QuickUnity_LuaEngine : LuaObject {
 		}
 	}
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static public int init(IntPtr l) {
+	static public int Start_s(IntPtr l) {
 		try {
-			QuickUnity.LuaEngine self=(QuickUnity.LuaEngine)checkSelf(l);
-			System.Action<System.Int32> a1;
-			LuaDelegation.checkDelegate(l,2,out a1);
-			System.Action a2;
-			LuaDelegation.checkDelegate(l,3,out a2);
-			SLua.LuaSvrFlag a3;
-			checkEnum(l,4,out a3);
-			self.init(a1,a2,a3);
-			pushValue(l,true);
-			return 1;
-		}
-		catch(Exception e) {
-			return error(l,e);
-		}
-	}
-	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static public int StartAsync_s(IntPtr l) {
-		try {
-			var ret=QuickUnity.LuaEngine.StartAsync();
+			var ret=QuickUnity.LuaEngine.Start();
 			pushValue(l,true);
 			pushValue(l,ret);
 			return 2;
@@ -112,8 +94,7 @@ public class Lua_QuickUnity_LuaEngine : LuaObject {
 	}
 	static public void reg(IntPtr l) {
 		getTypeTable(l,"QuickUnity.LuaEngine");
-		addMember(l,init);
-		addMember(l,StartAsync_s);
+		addMember(l,Start_s);
 		addMember(l,DoFile_s);
 		addMember(l,GetGlobalObject_s);
 		addMember(l,PushLuaLoader_s);
