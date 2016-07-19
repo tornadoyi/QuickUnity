@@ -331,6 +331,7 @@ namespace QuickUnity
             {
                 this.builtInAssetTablePath = builtInAssetTablePath;
                 this.externalAssetTablePath = externalAssetTablePath;
+                Debug.Log(this.builtInAssetTablePath);
             }
 
             protected override IEnumerator OnProcess()

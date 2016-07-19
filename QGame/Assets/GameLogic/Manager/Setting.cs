@@ -29,43 +29,40 @@ public class Setting : Singleton<Setting>
     /// <summary>
     /// All static config
     /// </summary>
-    public static readonly string streamingAssetsPath = Application.streamingAssetsPath;
+    public static string streamingAssetsPath { get{ return FileManager.PathCombine( FileManager.GetAppUrl(Application.streamingAssetsPath), platformName);} }
 
-    public static readonly string downloadCachePath = FileManager.PathCombine(Application.persistentDataPath, platformName);
+    public static string downloadCachePath { get{ return FileManager.PathCombine(Application.persistentDataPath, platformName); } }
 
-    public static readonly string settingFilePath = "Setting/Setting";
+    public static string settingFilePath { get{ return "Setting/Setting"; }}
 
-    public static readonly string localVersionFilePath = FileManager.PathCombine(downloadCachePath, "spiral.version");
+    public static string localVersionFilePath { get{ return FileManager.PathCombine(downloadCachePath, "spiral.version"); }}
 
     public static string latestVersionFileUrl { get { return FileManager.PathCombine(loginServerUrl, platformName, "spiral.version"); } }
 
-    public static string assetTableFileName = "asset_table.yml";
+    public static string assetTableFileName { get{ return "asset_table.yml";}}
 
-    public static string languageFilePath = "Setting/Language";
+    public static string languageFilePath { get{ return "Setting/Language";}}
 
-    public static readonly string streamingAssetsTableFilePath = FileManager.PathCombine(streamingAssetsPath, assetTableFileName);
+    public static string streamingAssetsTableFilePath { get{ return FileManager.PathCombine(streamingAssetsPath, assetTableFileName); }}
 
-    public static readonly string serverTableFilePath = FileManager.PathCombine(downloadCachePath, assetTableFileName);
+    public static string serverTableFilePath { get{ return FileManager.PathCombine(downloadCachePath, assetTableFileName); }}
 
-    public static readonly string luaAssetBundleName = "Lua";
-
-    public const string luaFileExtension = ".lua";
-
+    public static string luaAssetBundleName { get{ return "lua"; }}
 
     /// <summary>
     /// Symbol settings
     /// </summary>
-    public static readonly string assetSymbolLibraryName = "Resource";
+    public static string assetSymbolLibraryName { get{ return "Resource";}}
 
-    public static readonly string languageSymbolLibraryName = "Language";
+    public static string languageSymbolLibraryName { get{ return "Language";}}
 
-    public static readonly string languageSymbolFileName = "Language.txt";
+    public static string languageSymbolFileName { get{ return "Language.txt";}}
 
-    public static readonly string assetSymbolFileName = "Resource.txt";
+    public static string assetSymbolFileName {get { return "Resource.txt";}}
 
-    public static readonly string builtinSymbolPath = "Setting";
+    public static string builtinSymbolPath {get{ return "Setting";}}
 
-    public static readonly string externalSymbolPath = "Assets/DynamicAssets/Data";
+    public static string externalSymbolPath {get{ return "Assets/DynamicAssets/Data";}}
 
 
     /// <summary>

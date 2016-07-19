@@ -22,8 +22,9 @@ namespace QuickUnity
             get
             {
                 var rootPath = fromAssetServer ? AssetManager.assetServerUrl : AssetManager.streamingAssetsPath;
+                string format = QConfig.Asset.useVersionAsFileName ? "{0}.{1}.{2}" : "{0}.{2}";
                 return string.Format(
-                    "{0}.{1}.{2}",
+                    format,
                     FileManager.PathCombine(rootPath, name),
                     version,
                     QConfig.Asset.assetBundleSuffix);
@@ -33,8 +34,9 @@ namespace QuickUnity
         {
             get
             {
+                string format = QConfig.Asset.useVersionAsFileName ? "{0}.{1}.{2}" : "{0}.{2}";
                 return string.Format(
-                    "{0}.{1}.{2}",
+                    format,
                     FileManager.PathCombine(AssetManager.downloadCachePath, name),
                     version,
                     QConfig.Asset.assetBundleSuffix);

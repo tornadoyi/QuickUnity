@@ -467,6 +467,13 @@ namespace QuickUnity
             return path.Replace("\\", "/");
         }
 
+        public static string GetFilePathWithoutExtension(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return path;
+            return PathCombine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path));
+        }
+
+
     }
 }
 

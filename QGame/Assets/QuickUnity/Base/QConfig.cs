@@ -51,6 +51,8 @@ namespace QuickUnity
 
             public static bool loadAssetFromAssetBundle = true;
 
+            public static bool useVersionAsFileName = true;
+
             public static string assetBundleSuffix = "unity3d";
         }
 

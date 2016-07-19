@@ -1,0 +1,100 @@
+asset_bundles:
+- name: atlases/main
+  size: 66143
+  variant: ''
+  version: 1
+  hash: c9f622001c081610ebe7629b0b48a28b
+  dependencies: []
+  assets:
+  - Assets/_Assets/Atlases/Main.png
+- name: background/12_3
+  size: 549096
+  variant: ''
+  version: 1
+  hash: bbf9b765245720393072b038e042558b
+  dependencies: []
+  assets:
+  - Assets/_Assets/Background/12_3.png
+- name: background/4_1
+  size: 533991
+  variant: ''
+  version: 1
+  hash: 5ec042a96daa2a5f8c432a934ea8cd83
+  dependencies: []
+  assets:
+  - Assets/_Assets/Background/4_1.png
+- name: background/9_1
+  size: 524732
+  variant: ''
+  version: 1
+  hash: 887fe8924b5a4fc16a77197294ad5b0f
+  dependencies: []
+  assets:
+  - Assets/_Assets/Background/9_1.png
+- name: lua
+  size: 16288
+  variant: ''
+  version: 1
+  hash: 41487fa2792d80065e5809a95935fad3
+  dependencies: []
+  assets:
+  - Assets/_Assets/Lua/AppDelegate.bytes
+  - Assets/_Assets/Lua/Common/AssetLoader.bytes
+  - Assets/_Assets/Lua/Common/Config.bytes
+  - Assets/_Assets/Lua/Common/Debug.bytes
+  - Assets/_Assets/Lua/Common/EventDefine.bytes
+  - Assets/_Assets/Lua/Common/Formula.bytes
+  - Assets/_Assets/Lua/Common/GameDefine.bytes
+  - Assets/_Assets/Lua/Common/GameManager.bytes
+  - Assets/_Assets/Lua/Common/ScriptLoader.bytes
+  - Assets/_Assets/Lua/Framework/Callbacker.bytes
+  - Assets/_Assets/Lua/Framework/Class.bytes
+  - Assets/_Assets/Lua/Framework/DataManager.bytes
+  - Assets/_Assets/Lua/Framework/Extension.bytes
+  - Assets/_Assets/Lua/Framework/GameSceneManager.bytes
+  - Assets/_Assets/Lua/Framework/InputPlatform.bytes
+  - Assets/_Assets/Lua/Framework/LevelManager.bytes
+  - Assets/_Assets/Lua/Framework/Log.bytes
+  - Assets/_Assets/Lua/Framework/LuaBehaviour.bytes
+  - Assets/_Assets/Lua/Framework/LuaTask.bytes
+  - Assets/_Assets/Lua/Framework/STL.bytes
+  - Assets/_Assets/Lua/Framework/Serial.bytes
+  - Assets/_Assets/Lua/Framework/UserData.bytes
+  - Assets/_Assets/Lua/Framework/Utility.bytes
+  - Assets/_Assets/Lua/GameLogic/Common/GameController.bytes
+  - Assets/_Assets/Lua/GameLogic/Common/PageController.bytes
+  - Assets/_Assets/Lua/GameLogic/Pages/TestPage.bytes
+- name: pages/test
+  size: 6014
+  variant: ''
+  version: 1
+  hash: 778abc7692857569884ab179849199ff
+  dependencies:
+  - atlases/main
+  - background/4_1
+  assets:
+  - Assets/_Assets/Pages/Test/TestPage.prefab
+- name: sprites/home
+  size: 9557
+  variant: ''
+  version: 1
+  hash: 8cb465836025fc357308862c14d1d1c5
+  dependencies: []
+  assets:
+  - Assets/_Assets/Sprites/home.png
+- name: sprites/menu
+  size: 7963
+  variant: ''
+  version: 1
+  hash: a8a5f1225842fd37a4b63328dc00ebea
+  dependencies: []
+  assets:
+  - Assets/_Assets/Sprites/menu.png
+- name: sprites/test
+  size: 12187
+  variant: ''
+  version: 1
+  hash: 9611b531f843c1ee711cca22fd855c9e
+  dependencies: []
+  assets:
+  - Assets/_Assets/Sprites/test.png

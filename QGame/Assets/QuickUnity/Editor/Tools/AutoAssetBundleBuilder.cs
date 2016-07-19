@@ -434,7 +434,7 @@ namespace QuickUnity
                 var assetBundlePath = FileManager.PathCombine(buildPath, assetBundleName);
 
                 // Name
-                item.name = assetBundleName;
+                item.name = FileManager.GetFilePathWithoutExtension(assetBundleName);
 
                 // Size
                 var fi = new System.IO.FileInfo(assetBundlePath);
@@ -452,7 +452,8 @@ namespace QuickUnity
                 item.hash = hash.ToString();
 
                 // Dependencies
-                item.dependencies = manifest.GetAllDependencies(assetBundleName);
+                item.dependencies = manifest.GetAllDependencies(assetBundleName)
+                    .Select(path => FileManager.GetFilePathWithoutExtension(path) ).ToArray();
 
                 // Assets
                 item.assets = AssetDatabase.GetAssetPathsFromAssetBundle(assetBundleName);

@@ -1,0 +1,18 @@
+ManifestFileVersion: 0
+CRC: 1255637082
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 887fe8924b5a4fc16a77197294ad5b0f
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 9dea23ffc7e96552740e12d1ee5309d8
+HashAppended: 0
+ClassTypes:
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 213
+  Script: {instanceID: 0}
+Assets:
+- Assets/_Assets/Background/9_1.png
+Dependencies: []

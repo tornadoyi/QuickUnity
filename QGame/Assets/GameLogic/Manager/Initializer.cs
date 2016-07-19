@@ -20,10 +20,13 @@ public class Initializer : MonoBehaviour {
         // Load setting
         Setting.Load();
 
+        QConfig.Asset.useVersionAsFileName = false;
+
         // Start lua engine
         yield return LuaEngine.Start().WaitForFinish();
 
         // Download asset config
+        /*
         {
             var task = HttpManager.Download(
                 FileManager.PathCombine(Setting.cdnUrl, Setting.assetTableFileName),
@@ -34,19 +37,27 @@ public class Initializer : MonoBehaviour {
                 Debug.LogError("Download asset config fail");
             }
         }
+        */
 
-        // Download lua
+        // Download asset table
         {
             var task = AssetManager.Start(
                 Setting.streamingAssetsPath,
                 Setting.downloadCachePath,
                 Setting.cdnUrl,
-                string.Empty,
+                Setting.streamingAssetsTableFilePath,
                 Setting.serverTableFilePath);
             yield return task.WaitForFinish();
         }
 
-        LuaLoaderHelper.PushLuaLoader("ss");
+        // Load lua
+        {
+            var task = AssetManager.LoadAssetBundle(Setting.luaAssetBundleName);
+            yield return task.WaitForFinish();
+            Debug.LogFormat("Load lua {0}", task.success ? "success" : "fail");
+        }
+
+        LuaLoaderHelper.PushLuaLoader(Setting.luaAssetBundleName);
 
         QConfig.Asset.loadAssetFromAssetBundle = false;
         LuaEngine.enableLuaComponent = true;
