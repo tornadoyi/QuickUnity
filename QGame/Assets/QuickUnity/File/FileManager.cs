@@ -460,6 +460,13 @@ namespace QuickUnity
             }
         }
 
+
+        public static string FormatLinuxPathSeparator(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return path;
+            return path.Replace("\\", "/");
+        }
+
     }
 }
 

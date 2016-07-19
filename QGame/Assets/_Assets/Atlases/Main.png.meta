@@ -1,0 +1,151 @@
+fileFormatVersion: 2
+guid: 769d1cf5ebb647642a214b68e5bfae6d
+timeCreated: 1456994449
+licenseType: Pro
+TextureImporter:
+  fileIDToRecycleName:
+    21300000: bt_red
+    21300002: bt_back
+    21300004: dlg_yellow
+    21300006: bt_green
+    21300008: bt_yellow
+  serializedVersion: 2
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    linearTexture: 0
+    correctGamma: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 0
+  cubemapConvolution: 0
+  cubemapConvolutionSteps: 7
+  cubemapConvolutionExponent: 1.5
+  seamlessCubemap: 0
+  textureFormat: 4
+  maxTextureSize: 2048
+  textureSettings:
+    filterMode: -1
+    aniso: -1
+    mipBias: -1
+    wrapMode: 1
+  nPOTScale: 0
+  lightmap: 0
+  rGBM: 0
+  compressionQuality: 50
+  allowsAlphaSplitting: 0
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spritePixelsToUnits: 100
+  alphaIsTransparency: 1
+  textureType: 8
+  buildTargetSettings: []
+  spriteSheet:
+    sprites:
+    - name: bt_red
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 144
+        height: 64
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 55, y: 25, z: 55, w: 25}
+      outline:
+      - - {x: -71, y: 32}
+        - {x: -72, y: 31}
+        - {x: -72, y: -31}
+        - {x: -71, y: -32}
+        - {x: 71, y: -32}
+        - {x: 72, y: -31}
+        - {x: 72, y: 31}
+        - {x: 71, y: 32}
+    - name: bt_back
+      rect:
+        serializedVersion: 2
+        x: 145
+        y: 0
+        width: 104
+        height: 56
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 55, y: 20, z: 40, w: 20}
+      outline:
+      - - {x: -46, y: 28}
+        - {x: -52, y: 21}
+        - {x: -52, y: -14}
+        - {x: -44, y: -28}
+        - {x: 52, y: -28}
+        - {x: 52, y: 28}
+    - name: dlg_yellow
+      rect:
+        serializedVersion: 2
+        x: 145
+        y: 130
+        width: 80
+        height: 80
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 35, y: 35, z: 35, w: 35}
+      outline:
+      - - {x: -40, y: 40}
+        - {x: -40, y: -40}
+        - {x: 40, y: -40}
+        - {x: 40, y: 40}
+    - name: bt_green
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 65
+        width: 144
+        height: 64
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 55, y: 25, z: 55, w: 25}
+      outline:
+      - - {x: -71, y: 32}
+        - {x: -72, y: 31}
+        - {x: -72, y: -31}
+        - {x: -71, y: -32}
+        - {x: 71, y: -32}
+        - {x: 72, y: -31}
+        - {x: 72, y: 31}
+        - {x: 71, y: 32}
+    - name: bt_yellow
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 130
+        width: 144
+        height: 64
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 55, y: 25, z: 55, w: 25}
+      outline:
+      - - {x: -71, y: 32}
+        - {x: -72, y: 31}
+        - {x: -72, y: -31}
+        - {x: -71, y: -32}
+        - {x: 71, y: -32}
+        - {x: 72, y: -31}
+        - {x: 72, y: 31}
+        - {x: 71, y: 32}
+    outline: []
+  spritePackingTag: 
+  userData: 
+  assetBundleName: atlases/main.unity3d
+  assetBundleVariant: 
