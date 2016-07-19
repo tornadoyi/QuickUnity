@@ -1,0 +1,22 @@
+build_path: ../ci/assetbunlde_build
+
+asset_bundle_ext: unity3d
+
+build_options:
+  - DeterministicAssetBundle
+  - ChunkBasedCompression
+
+root_path: Assets/_Assets
+
+asset_bundle_pattern:
+  - ^Atlases/[\w]+
+  - ^Pages/[\w]+
+  - ^Lua
+
+ignore_file_pattern:
+  - ^.*?\.(luaprj|meta|unity|sublime-project|sublime-workspace)$
+  - ^.*?/(_|\.)[^/]*/
+
+file_extension_replace:
+  - [lua, bytes]
+  

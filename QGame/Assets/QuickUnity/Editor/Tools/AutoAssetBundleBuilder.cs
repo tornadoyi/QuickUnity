@@ -74,6 +74,11 @@ namespace QuickUnity
                 {
                     UpdateAssetBundleNames();
                 }
+
+                if (GUILayout.Button("Build AssetBundles"))
+                {
+                    BuildAssetBundles();
+                }
             }
 
 
@@ -139,6 +144,11 @@ namespace QuickUnity
             }
         }
 
+        void BuildAssetBundles()
+        {
+            AssetBundleBuilder.BuildAssetBundles(target, config);
+        }
+
         void UpdateAssetBundleNames()
         {
             if (config == null)
@@ -155,10 +165,10 @@ namespace QuickUnity
             var input = new StringReader(document);
             var deserializer = new Deserializer(namingConvention: new CamelCaseNamingConvention());
             config = deserializer.Deserialize<AssetBundleBuilder.Config>(input);
-            var map = AssetBundleBuilder.CalculateAssetBundles(config);
+            var map = AssetBundleBuilder.CalculateAssetBundles(
+                config.rootPath, config.ignoreFilePatterns, config.assetBundlePatterns, config.assetBundleExtension);
 
             config.buildPath = FileManager.FormatLinuxPathSeparator(System.IO.Path.GetFullPath(config.buildPath));
-
             assetBundles = new List<AssetBundleItem>();
             foreach (var kv in map)
             {
@@ -193,6 +203,9 @@ namespace QuickUnity
             [YamlMember(Alias = "build_options")]
             public string[] buildOptionDescs { get; set; }
 
+            [YamlMember(Alias = "file_extension_replace")]
+            public List<string[]> fileExtReplace { get; set; }
+
             public BuildAssetBundleOptions buildOptions
             {
                 get
@@ -208,10 +221,16 @@ namespace QuickUnity
             }
         }
 
-        public static void BuildAssetBundles(string buildPath, BuildTarget target, Config config)
+        public static void BuildAssetBundles(BuildTarget target, Config config)
         {
+            var buildPath = FileManager.PathCombine(config.buildPath, target.ToString());
+            if(!Directory.Exists(buildPath)) Directory.CreateDirectory(buildPath);
+
+            var assetList = CollectTargetAssets(config.rootPath, config.ignoreFilePatterns);
+            ProcessFileExtensions(assetList, config.fileExtReplace, true);
             UpdateAssetBundleNames(config);
             BuildPipeline.BuildAssetBundles(buildPath, config.buildOptions, target);
+            ProcessFileExtensions(assetList, config.fileExtReplace, false);
         }
 
 
@@ -225,10 +244,11 @@ namespace QuickUnity
 
             AssetDatabase.RemoveUnusedAssetBundleNames();
 
-            var assetList = AssetDatabase.GetAllAssetPaths().Where(path => path.StartsWith(config.rootPath)).ToList();
+            var assetList = CollectTargetAssets(config.rootPath, config.ignoreFilePatterns);
             foreach (var path in assetList)
             {
-                UpdateAssetBundleName(path, config);
+                var assetBundleName = GenerateAssetBundleName(path, config.rootPath, config.assetBundlePatterns, config.assetBundleExtension);
+                SaveAssetBundleName(path, assetBundleName);
             }
 
             AssetDatabase.RemoveUnusedAssetBundleNames();
@@ -236,30 +256,15 @@ namespace QuickUnity
             System.GC.Collect();
         }
 
-        public static void UpdateAssetBundleName(string path, Config config)
-        {
-            if (Directory.Exists(path)) return;
 
-            if (!IsTarget(path, config))
-            {
-                CleanAssetBundleName(path);
-                return;
-            }
-
-            var assetBundleName = GenerateAssetBundleName(path, config);
-            SaveAssetBundleName(path, assetBundleName);
-        }
-
-
-        public static Dictionary<string, List<string>> CalculateAssetBundles(Config config)
+        public static Dictionary<string, List<string>> CalculateAssetBundles(string rootPath, string[] ignoreFilePatterns, string[] assetBundlePatterns, string assetBundleExtension)
         {
             var assetBundles = new Dictionary<string, List<string>>();
 
-            var assetList = AssetDatabase.GetAllAssetPaths().Where(path => path.StartsWith(config.rootPath)).ToList();
+            var assetList = CollectTargetAssets(rootPath, ignoreFilePatterns);
             foreach (var path in assetList)
             {
-                if (Directory.Exists(path) || !IsTarget(path, config)) continue;
-                var assetBundleName = GenerateAssetBundleName(path, config);
+                var assetBundleName = GenerateAssetBundleName(path, rootPath, assetBundlePatterns, assetBundleExtension);
                 List<string> assets;
                 if(!assetBundles.TryGetValue(assetBundleName, out assets))
                 {
@@ -272,18 +277,31 @@ namespace QuickUnity
         }
 
 
-
-        private static bool IsTarget(string path, Config config)
+        public static List<string> CollectTargetAssets(string rootPath, string[] ignoreFilePatterns)
         {
-            var subPath = path.Substring(config.rootPath.Length);
-            if (!path.StartsWith(config.rootPath))
+            var allList = AssetDatabase.GetAllAssetPaths().Where(path => path.StartsWith(rootPath)).ToList();
+            var assetList = new List<string>();
+            foreach(var asset in allList)
+            {
+                if (!IsTarget(asset, rootPath, ignoreFilePatterns)) continue;
+                assetList.Add(asset);
+            }
+            return assetList;
+        }
+
+        public static bool IsTarget(string path, string rootPath, string[] ignoreFilePatterns)
+        {
+            if (string.IsNullOrEmpty(path) || Directory.Exists(path)) return false;
+
+            var subPath = path.Substring(rootPath.Length);
+            if (!path.StartsWith(rootPath))
             {
                 return false;
             }
 
-            if (config.ignoreFilePatterns != null)
+            if (ignoreFilePatterns != null)
             {
-                foreach (var pattern in config.ignoreFilePatterns)
+                foreach (var pattern in ignoreFilePatterns)
                 {
                     if (Regex.IsMatch(subPath, pattern)) return false;
                 }
@@ -291,26 +309,25 @@ namespace QuickUnity
             return true;
         }
 
-        private static string GenerateAssetBundleName(string path, Config config)
+        public static string GenerateAssetBundleName(string path, string rootPath, string[] assetBundlePatterns, string assetBundleExtension)
         {
-            var assetPath = path.Substring(config.rootPath.Length + 1); ;
+            var assetPath = path.Substring(rootPath.Length + 1); ;
             var directory = Path.GetDirectoryName(assetPath).ToLower();
             var filename = Path.GetFileNameWithoutExtension(assetPath).ToLower();
 
-
-            foreach (var pattern in config.assetBundlePatterns)
+            foreach (var pattern in assetBundlePatterns)
             {
                 var match = Regex.Match(directory, pattern, RegexOptions.IgnoreCase);
                 if (match.Success)
                 {
-                    return PathToAssetBundleName(match.Value, config.assetBundleExtension);
+                    return PathToAssetBundleName(match.Value, assetBundleExtension);
                 }
             }
 
-            return PathToAssetBundleName(Path.Combine(directory, filename), config.assetBundleExtension);
+            return PathToAssetBundleName(Path.Combine(directory, filename), assetBundleExtension);
         }
 
-        private static string PathToAssetBundleName(string path, string extension)
+        public static string PathToAssetBundleName(string path, string extension)
         {
             var assetBundlePath = Path.ChangeExtension(path, extension);
             assetBundlePath = assetBundlePath.Replace("\\", "/");
@@ -318,7 +335,7 @@ namespace QuickUnity
             return assetBundlePath;
         }
 
-        private static void SaveAssetBundleName(string path, string assetBundleName)
+        public static void SaveAssetBundleName(string path, string assetBundleName)
         {
             var importer = AssetImporter.GetAtPath(path);
             if (importer.assetBundleName != assetBundleName)
@@ -330,7 +347,7 @@ namespace QuickUnity
             }
         }
 
-        private static void CleanAssetBundleName(string path)
+        public static void CleanAssetBundleName(string path)
         {
             var importer = AssetImporter.GetAtPath(path);
             if (!string.IsNullOrEmpty(importer.assetBundleName))
@@ -338,6 +355,34 @@ namespace QuickUnity
                 importer.assetBundleName = string.Empty;
                 importer.assetBundleVariant = null;
             }
+        }
+
+
+        public static void ProcessFileExtensions(List<string> assets, List<string[]> replace, bool forward = true)
+        {
+            if (replace == null) return;
+            for(int i=0; i< assets.Count; ++i)
+            {
+                var asset = assets[i];
+                var ext = Path.GetExtension(asset).Replace(".", "");
+                int src = 0;
+                int dst = 1;
+                if(!forward)
+                {
+                    src = 1;
+                    dst = 0; 
+                }
+                foreach (var rep in replace)
+                {
+                    if (rep.Length < 2) continue;
+                    if (ext != rep[src]) continue;
+                    var newAsset = Path.ChangeExtension(asset, rep[dst]);
+                    File.Move(asset, newAsset);
+                    assets[i] = newAsset;
+                    break;
+                }
+            }
+            AssetDatabase.Refresh();
         }
     }
 }

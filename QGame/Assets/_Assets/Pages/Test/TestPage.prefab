@@ -11,7 +11,7 @@ GameObject:
   - 223: {fileID: 22362300}
   - 114: {fileID: 11426836}
   m_Layer: 5
-  m_Name: Test
+  m_Name: TestPage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
