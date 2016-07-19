@@ -46,7 +46,7 @@ namespace QuickUnity
             {
                 StreamingAssets = 0,
                 Resources = 1,
-                Server = 2,
+                AssetServer = 2,
             }
 
             public static bool loadAssetFromAssetBundle = true;

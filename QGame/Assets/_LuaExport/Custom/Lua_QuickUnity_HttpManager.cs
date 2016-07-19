@@ -100,7 +100,7 @@ public class Lua_QuickUnity_HttpManager : LuaObject {
 				checkType(l,2,out a2);
 				System.String a3;
 				checkType(l,3,out a3);
-				System.Int32 a4;
+				System.Int64 a4;
 				checkType(l,4,out a4);
 				var ret=QuickUnity.HttpManager.Download(a1,a2,a3,a4);
 				pushValue(l,true);

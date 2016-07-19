@@ -18,7 +18,7 @@ public class Lua_QuickUnity_HttpDownloadTask : LuaObject {
 			checkType(l,5,out a4);
 			System.String a5;
 			checkType(l,6,out a5);
-			System.Int32 a6;
+			System.Int64 a6;
 			checkType(l,7,out a6);
 			o=new QuickUnity.HttpDownloadTask(a1,a2,a3,a4,a5,a6);
 			pushValue(l,true);

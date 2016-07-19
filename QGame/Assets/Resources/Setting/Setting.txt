@@ -5,7 +5,8 @@
 login_server_url : http://10.130.137.64:8020
 
 #cdn_url: http://10.130.137.64/static
-cdn_url: file://D:/QuickUnity/ci/assetbunlde_build
+#cdn_url: file://D:/QuickUnity/ci/assetbunlde_build
+cdn_url: file:///Users/Jason/Work/QuickUnity/ci/assetbunlde_build
 
 app_version: v0.1
 

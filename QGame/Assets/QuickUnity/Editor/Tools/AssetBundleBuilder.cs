@@ -435,7 +435,7 @@ namespace QuickUnity
             public string name = "Default";
             public string outputRelativePath = string.Empty;
             public string variant = string.Empty;
-            public QConfig.Asset.AssetPathType location = QConfig.Asset.AssetPathType.Server;
+            public QConfig.Asset.AssetPathType location = QConfig.Asset.AssetPathType.AssetServer;
 
             public string md5 = string.Empty;
             public List<string> pathOrFile = new List<string>();

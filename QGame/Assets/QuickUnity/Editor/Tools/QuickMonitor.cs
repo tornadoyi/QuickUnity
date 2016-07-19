@@ -122,7 +122,7 @@ namespace QuickUnity
                     if (info == null) GUILayout.Button("Path", "miniButtonRight");
                     else
                     {
-                        EditorGUILayout.LabelField(info.relativePath, style);
+                        EditorGUILayout.LabelField(info.name, style);
                     }
                 }
             };

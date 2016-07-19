@@ -29,7 +29,7 @@ public class Setting : Singleton<Setting>
     /// <summary>
     /// All static config
     /// </summary>
-    public static readonly string streamingAssetsAssetPath = Application.streamingAssetsPath;
+    public static readonly string streamingAssetsPath = Application.streamingAssetsPath;
 
     public static readonly string downloadCachePath = FileManager.PathCombine(Application.persistentDataPath, platformName);
 
@@ -43,7 +43,7 @@ public class Setting : Singleton<Setting>
 
     public static string languageFilePath = "Setting/Language";
 
-    public static readonly string streamingAssetsTableFilePath = FileManager.PathCombine(streamingAssetsAssetPath, assetTableFileName);
+    public static readonly string streamingAssetsTableFilePath = FileManager.PathCombine(streamingAssetsPath, assetTableFileName);
 
     public static readonly string serverTableFilePath = FileManager.PathCombine(downloadCachePath, assetTableFileName);
 
@@ -125,7 +125,7 @@ public class Setting : Singleton<Setting>
     {
         var builder = new System.Text.StringBuilder();
         builder.AppendLine("========== Setting ==========");
-        builder.AppendFormat("builtInAssetPath: {0}\n", streamingAssetsAssetPath);
+        builder.AppendFormat("builtInAssetPath: {0}\n", streamingAssetsPath);
         builder.AppendFormat("downloadCachePath: {0}\n", downloadCachePath);
         builder.AppendFormat("settingFilePath: {0}\n", settingFilePath);
         builder.AppendFormat("localVersionFilePath: {0}\n", localVersionFilePath);

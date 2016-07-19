@@ -82,11 +82,11 @@ namespace QuickUnity
             public bool automaticDecompression { get; set; }
             public string internetProxy { get; set; }
             public string expectMD5 { get; set; }
-            public int expectFileSize { get; set; }
+            public long expectFileSize { get; set; }
 
             public string md5 { get; private set; }
-            public int fileSize { get; private set; }
-            public int downloadSize { get; private set; }
+            public long fileSize { get; private set; }
+            public long downloadSize { get; private set; }
 
 
             protected override void OnCheck()
@@ -195,11 +195,11 @@ namespace QuickUnity
         public bool automaticDecompression { get; private set; }
         public string internetProxy { get; private set; }
         public string expectMD5 { get; private set; }
-        public int expectFileSize { get; private set; }
+        public long expectFileSize { get; private set; }
 
         public string md5 { get; private set; }
-        public int fileSize { get; private set; }
-        public int downloadSize { get; private set; }
+        public long fileSize { get; private set; }
+        public long downloadSize { get; private set; }
 
 
         public HttpDownloadTask(
@@ -208,7 +208,7 @@ namespace QuickUnity
             bool automaticDecompression,
             string internetProxy,
             string expectMD5,
-            int expectFileSize) : base(url)
+            long expectFileSize) : base(url)
         {
             this.fileSavePath = fileSavePath;
             this.internetProxy = internetProxy;

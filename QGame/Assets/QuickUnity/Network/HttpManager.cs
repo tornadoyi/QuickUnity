@@ -76,7 +76,7 @@ namespace QuickUnity
             string url,
             string fileSavePath,
             string expectMD5,
-            int expectFileSize)
+            long expectFileSize)
         {
             Task task = null;
             if (QConfig.Network.donwloadMode == DownloadMode.WWW ||

@@ -10,8 +10,8 @@ namespace QuickUnity
     public partial class AssetManager : BaseManager<AssetManager>
     {
         public static string streamingAssetsPath { get; private set; }
-        public static string serverAssetPath { get; private set;}
-        public static string downloadUrl { get; private set; }
+        public static string assetServerUrl { get; private set;}
+        public static string downloadCachePath { get; private set; }
 
         protected AssetTable assetTable;
         protected Dictionary<string, AssetBundleInfo> loadedBundleDict = new Dictionary<string, AssetBundleInfo>();
@@ -32,14 +32,14 @@ namespace QuickUnity
 
         public static Task Start(
             string streamingAssetsPath, 
-            string serverAssetPath, 
-            string downloadUrl,
+            string assetServerUrl, 
+            string downloadCachePath,
             string streamingAssetsTablePath, 
             string serverTablePath)
         {
             AssetManager.streamingAssetsPath = streamingAssetsPath;
-            AssetManager.serverAssetPath = serverAssetPath;
-            AssetManager.downloadUrl = downloadUrl;
+            AssetManager.assetServerUrl = assetServerUrl;
+            AssetManager.downloadCachePath = downloadCachePath;
 
             AssetManagerInitTask task = new AssetManagerInitTask(streamingAssetsTablePath, serverTablePath);
             task.Start();
@@ -353,7 +353,7 @@ namespace QuickUnity
                 {
                     Task task = externalTable.LoadAsync(
                         externalAssetTablePath,
-                        QConfig.Asset.AssetPathType.Server);
+                        QConfig.Asset.AssetPathType.AssetServer);
                     yield return task.WaitForFinish();
                 }
 

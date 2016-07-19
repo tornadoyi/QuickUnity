@@ -6,48 +6,96 @@ namespace QuickUnity
 {
     public class AssetBundleInfo
     {
+        public string name { get; private set;}
+        public long size { get; private set;}
+        public string variant { get; private set;}
+        public long version { get; private set;}
+        public string hash { get; private set;}
+        public QConfig.Asset.AssetPathType pathType { get; private set;}
+        public List<string> dependList { get; private set;}
+
+        public bool fromStreamingAssets { get { return pathType == QConfig.Asset.AssetPathType.StreamingAssets; } }
+        public bool fromAssetServer { get { return pathType == QConfig.Asset.AssetPathType.AssetServer; } }
+
+        public string url
+        {
+            get
+            {
+                var rootPath = fromAssetServer ? AssetManager.assetServerUrl : AssetManager.streamingAssetsPath;
+                return string.Format(
+                    "{0}.{1}.{2}",
+                    FileManager.PathCombine(rootPath, name),
+                    version,
+                    QConfig.Asset.assetBundleSuffix);
+            }
+        }
+        public string cachePath
+        {
+            get
+            {
+                return string.Format(
+                    "{0}.{1}.{2}",
+                    FileManager.PathCombine(AssetManager.downloadCachePath, name),
+                    version,
+                    QConfig.Asset.assetBundleSuffix);
+            }
+        }
+           
+        public Dictionary<string, AssetInfo> assetDict { get; private set;}
+        public Dictionary<string, AssetBundleInfo> dependBundleDict { get; private set;}
+
+        public AssetBundle assetBundle { get; private set;}
+
+        public bool unused { get { return (!keepTag && reference == 0 && assetLoadingCount == 0 && !loading); } }
+        public bool loading { get { return loadTask != null; } }
+        public bool loaded { get { return assetBundle != null; } }
+        public bool downloading { get { return downloadTask != null; } }
+
+        // Keep tag
+        public bool keepTag = false;
+
+        protected LoadOrDownloadAssetBundleTask loadTask;
+        protected DownloadAssetBundleTask downloadTask;
+
+        public int reference { get; private set;}
+        public int assetLoadingCount = 0;
+
+        public bool fileExists {get{ return fromStreamingAssets ? true : System.IO.File.Exists(cachePath);;}}
+
+        /// <summary>
+        /// Event for bundle load and unload
+        /// </summary>
+        public static event QEventHandler1 bundleLoad;
+        public static event QEventHandler1 bundleUnLoad;
+
+
+
         public AssetBundleInfo(
             string name, 
-            int size, 
+            long size, 
             string variant, 
-            string relativePath, 
             long version, 
-            string md5, 
+            string hash, 
             List<string> dependList,
+            List<string> assetList,
             QConfig.Asset.AssetPathType pathType)
         {
-            _name = name;
-            _size = size;
-            _variant = variant;
-            _relativePath = relativePath;
-            _version = version;
-            _md5 = md5;
-            _dependList = dependList;
-            _pathType = pathType;
-        }
+            this.name = name;
+            this.size = size;
+            this.variant = variant;
+            this.version = version;
+            this.hash = hash;
+            this.dependList = dependList;
+            this.pathType = pathType;
 
-        public bool AddAssetInfo(BundleAssetInfo asset)
-        {
-            if (asset == null)
+            assetDict = new Dictionary<string, AssetInfo>();
+            dependBundleDict = new Dictionary<string, AssetBundleInfo>();
+
+            for (int i = 0; i < assetList.Count; ++i)
             {
-                Debug.LogError("Invalid asset");
-                return false;
+                var asset = new BundleAssetInfo(assetList[i], this);
+                AddAssetInfo(asset);
             }
-
-            if (asset.bundleInfo != null)
-            {
-                Debug.LogError(string.Format("Asset {0} has save in bundle {1}", asset.name, asset.bundleInfo.name));
-                return false;
-            }
-
-            if (_assetDict.ContainsKey(asset.name))
-            {
-                Debug.LogError(string.Format("Repeated asset {0} in bundle", asset.name, name));
-                return false;
-            }
-            _assetDict.Add(asset.name, asset);
-
-            return true;
         }
 
         public bool AddDependency(AssetBundleInfo bundle)
@@ -58,9 +106,9 @@ namespace QuickUnity
                 return false;
             }
 
-            if (_dependBundleDict.ContainsKey(bundle.name)) return true;
+            if (dependBundleDict.ContainsKey(bundle.name)) return true;
 
-            _dependBundleDict.Add(bundle.name, bundle);
+            dependBundleDict.Add(bundle.name, bundle);
 
             return true;
         }
@@ -141,134 +189,45 @@ namespace QuickUnity
         }
 
 
-        public void Retain() { ++_reference; }
+        public void Retain() { ++reference; }
         public void Release()
         {
-            if (_reference == 0)
+            if (reference == 0)
             {
                 Debug.LogError("Invalid release, current reference is 0");
                 return;
             }
-            --_reference;
+            --reference;
         }
 
-
-        #region Base properties ==================================================================================
-
-        public string name { get { return _name; } }
-        protected string _name;
-
-        public int size { get { return _size; } }
-        protected int _size;
-
-        public string relativePath { get { return _relativePath; } }
-        protected string _relativePath = string.Empty;
-
-        public string variant { get { return _variant; } }
-        protected string _variant = string.Empty;
-
-        public long version { get { return _version; } }
-        protected long _version;
-        public string md5 { get { return _md5; } }
-        protected string _md5 = string.Empty;
-
-        public QConfig.Asset.AssetPathType pathType { get { return _pathType; } }
-        public QConfig.Asset.AssetPathType _pathType;
-
-        public bool isBuiltin { get { return pathType == QConfig.Asset.AssetPathType.StreamingAssets; } }
-  
-        public bool isExternal { get { return pathType == QConfig.Asset.AssetPathType.Server; } }
-
-        public List<string> dependList { get { return _dependList; } }
-        protected List<string> _dependList = new List<string>();
-
-        public string id { get { return FileManager.PathCombine(relativePath, name); } }
-
-        public string fileCachePath
+        private bool AddAssetInfo(BundleAssetInfo asset)
         {
-            get
+            if (asset == null)
             {
-                if (_pathType == QConfig.Asset.AssetPathType.StreamingAssets)
-                {
-                    return string.Format(
-                        "{0}.{1}.{2}",
-                        FileManager.PathCombine(AssetManager.streamingAssetsPath, relativePath, name),
-                        version,
-                        QConfig.Asset.assetBundleSuffix);
-                }
-                else
-                {
-                    return string.Format(
-                        "{0}.{1}.{2}",
-                        FileManager.PathCombine(AssetManager.serverAssetPath, relativePath, name),
-                        version,
-                        QConfig.Asset.assetBundleSuffix);
-                }
+                Debug.LogError("Invalid asset");
+                return false;
             }
+
+            if (asset.bundleInfo != this)
+            {
+                Debug.LogError(string.Format("Asset {0} has save in bundle {1}", asset.name, asset.bundleInfo.name));
+                return false;
+            }
+
+            if (assetDict.ContainsKey(asset.name))
+            {
+                Debug.LogError(string.Format("Repeated asset {0} in bundle", asset.name, name));
+                return false;
+            }
+            assetDict.Add(asset.name, asset);
+
+            return true;
         }
 
-        public string fileDownloadUrl
-        {
-            get
-            {
-                if (_pathType == QConfig.Asset.AssetPathType.StreamingAssets) return string.Empty;
-                return string.Format(
-                    "{0}.{1}.{2}",
-                    FileManager.PathCombine(AssetManager.downloadUrl, relativePath, name),
-                    version,
-                    QConfig.Asset.assetBundleSuffix);
-            }
-        }
-
-        public Dictionary<string, AssetInfo> assetDict { get { return _assetDict; } }
-        protected Dictionary<string, AssetInfo> _assetDict = new Dictionary<string, AssetInfo>();
-
-        public Dictionary<string, AssetBundleInfo> dependBundleDict { get { return _dependBundleDict; } }
-        protected Dictionary<string, AssetBundleInfo> _dependBundleDict = new Dictionary<string, AssetBundleInfo>();
-
-        #endregion
 
 
+        // =================================== Task =================================== //
 
-        #region Runtime properties ==================================================================================
-
-        public AssetBundle assetBundle;
-
-        public bool unused { get { return (!keepTag && reference == 0 && assetLoadingCount == 0 && !loading); } }
-        public bool loading { get { return loadTask != null; } }
-        public bool loaded { get { return assetBundle != null; } }
-        public bool downloading { get { return downloadTask != null; } }
-        
-        // Keep tag
-        public bool keepTag = false;
-
-        protected LoadOrDownloadAssetBundleTask loadTask;
-        protected DownloadAssetBundleTask downloadTask;
-
-        public int reference { get { return _reference; } }
-        protected int _reference = 0;
-        public int assetLoadingCount = 0;
-
-        public bool fileExists
-        {
-            get
-            {
-                if (_pathType == QConfig.Asset.AssetPathType.StreamingAssets) return true;
-                return System.IO.File.Exists(fileCachePath);
-            }
-        }
-
-        #endregion
-
-
-        /// <summary>
-        /// Event for bundle load and unload
-        /// </summary>
-        public static event QEventHandler1 bundleLoad;
-        public static event QEventHandler1 bundleUnLoad;
-
-
-        #region Task ==================================================================================
 
         protected class LoadOrDownloadAssetBundleTask : CoroutineTask
         {
@@ -325,7 +284,7 @@ namespace QuickUnity
 
                 // Load self when all dependencies has loaded before
                 {
-                    var task = new LoadAssetBundleTask(assetBundleInfo.fileCachePath, assetBundleInfo.pathType, assetBundleInfo.md5);
+                    var task = new LoadAssetBundleTask(assetBundleInfo.cachePath, assetBundleInfo.pathType, assetBundleInfo.hash);
                     yield return task.Start().WaitForFinish();
                     if(task.fail)
                     {
@@ -374,7 +333,7 @@ namespace QuickUnity
                 byte[] bytes = null;
                 switch (pathType)
                 {
-                    case QConfig.Asset.AssetPathType.Server:
+                    case QConfig.Asset.AssetPathType.AssetServer:
                         {
                             FileReadBytesTask task = new FileReadBytesTask(path);
                             yield return task.Start().WaitForFinish();
@@ -410,7 +369,7 @@ namespace QuickUnity
 
                 if (bytes == null) yield break;
 
-                if (!string.IsNullOrEmpty(_expectMD5) && pathType == QConfig.Asset.AssetPathType.Server)
+                if (!string.IsNullOrEmpty(_expectMD5) && pathType == QConfig.Asset.AssetPathType.AssetServer)
                 {
                     _md5 = Utility.MD5.Compute(bytes);
                     if (_md5 != _expectMD5)
@@ -458,13 +417,13 @@ namespace QuickUnity
                 }
 
                 // Download self
-                if(assetBundleInfo.isExternal && !assetBundleInfo.fileExists)
+                if(assetBundleInfo.fromAssetServer && !assetBundleInfo.fileExists)
                 {
-                    var task = HttpManager.Download(assetBundleInfo.fileDownloadUrl, assetBundleInfo.fileCachePath, assetBundleInfo.md5, assetBundleInfo.size);
+                    var task = HttpManager.Download(assetBundleInfo.url, assetBundleInfo.cachePath, assetBundleInfo.hash, assetBundleInfo.size);
                     yield return task.WaitForFinish();
                     if (task.fail)
                     {
-                        SetFail(string.Format("Download AssetBundle failed, url:{0} ", assetBundleInfo.fileDownloadUrl), task.error);
+                        SetFail(string.Format("Download AssetBundle failed, url:{0} ", assetBundleInfo.url), task.error);
                         yield break;
                     }
                 }
@@ -483,8 +442,7 @@ namespace QuickUnity
                 }
             }
         }
-
-        #endregion
+            
     }
 }
 

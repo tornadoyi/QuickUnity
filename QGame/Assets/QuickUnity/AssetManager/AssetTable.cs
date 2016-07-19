@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using SimpleJson;
+using YamlDotNet.RepresentationModel;
+using System;
 
 namespace QuickUnity
 {
@@ -46,12 +48,12 @@ namespace QuickUnity
                 return;
             }
 
-            if(bundleDict.ContainsKey(info.id))
+            if(bundleDict.ContainsKey(info.name))
             {
-                Debug.LogError(string.Format("Repeated bundle {0}", info.id));
+                Debug.LogError(string.Format("Repeated bundle {0}", info.name));
                 return;
             }
-            bundleDict.Add(info.id, info);
+            bundleDict.Add(info.name, info);
         }
 
         public void AddAssetInfo(AssetInfo info)
@@ -96,7 +98,7 @@ namespace QuickUnity
                     var dependBundle = GetBundleInfo(dependName);
                     if(dependBundle == null)
                     {
-                        Debug.LogError(string.Format("Can not find depend bundle {0} from depend list of {1}", dependName, bundleInfo.id));
+                        Debug.LogError(string.Format("Can not find depend bundle {0} from depend list of {1}", dependName, bundleInfo.name));
                         continue;
                     }
                     bundleInfo.AddDependency(dependBundle);
@@ -142,6 +144,60 @@ namespace QuickUnity
             return table;
         }
 
+        public bool FromYaml(string yml, QConfig.Asset.AssetPathType assetPathType)
+        {
+            // Check
+            if(string.IsNullOrEmpty(yml))
+            {
+                Debug.LogError("Invalid json string");
+                return false;
+            }
+
+            var input = new StringReader(yml);
+            var yaml = new YamlStream();
+            yaml.Load(input);
+            var root = (YamlMappingNode)yaml.Documents[0].RootNode;
+            var assetBundlesNode = (YamlSequenceNode)root.Children[new YamlScalarNode("asset_bundles")];
+            for (int i=0; i<assetBundlesNode.Children.Count; ++i)
+            {
+                var node = (YamlMappingNode)assetBundlesNode.Children[i];
+
+                // Depends
+                var depends = new List<string>();
+                var dependNode = (YamlSequenceNode)node.Children[new YamlScalarNode("dependencies")];
+                for (int j = 0; j < dependNode.Children.Count; ++j)
+                {
+                    depends.Add(dependNode.Children[j].ToString());
+
+                }
+
+                // Assets
+                var assets = new List<string>();
+                var assetNode = (YamlSequenceNode)node.Children[new YamlScalarNode("assets")];
+                for (int j = 0; j < assetNode.Children.Count; ++j)
+                {
+                    assets.Add(assetNode.Children[j].ToString());
+                }
+
+                // Bundle
+                AssetBundleInfo bundle = new AssetBundleInfo(
+                    node.Children[new YamlScalarNode("name")].ToString(), 
+                    Convert.ToInt64(node.Children[new YamlScalarNode("size")].ToString()), 
+                    node.Children[new YamlScalarNode("variant")].ToString(), 
+                    Convert.ToInt64(node.Children[new YamlScalarNode("version")].ToString()),
+                    node.Children[new YamlScalarNode("hash")].ToString(),
+                    depends,
+                    assets,
+                    assetPathType);
+
+                // Save
+                AddAssetBundleInfo(bundle);
+                    
+            }
+
+            return true;
+        }
+
         public bool FromJson(string json, QConfig.Asset.AssetPathType assetPathType)
         {
             // Check
@@ -172,24 +228,26 @@ namespace QuickUnity
                     dependList.Add(jdpends[i] as string);
                 }
 
-                // Properties
-                AssetBundleInfo bundle = new AssetBundleInfo(
-                    jbundle.GetString("name"),
-                    jbundle.GetInt("size"),
-                    jbundle.GetString("variant"),
-                    jbundle.GetString("relative_path"),
-                    jbundle.GetInt("version"),
-                    jbundle.GetString("md5"),
-                    dependList,
-                    assetPathType);
-
                 // Assets
+                var assets = new List<string>();
                 var jassets = jbundle.GetArray("assets");
                 for (int i = 0; i < jassets.Count; ++i)
                 {
-                    var asset = new BundleAssetInfo(jassets[i] as string, bundle);
-                    bundle.AddAssetInfo(asset);
+                    assets.Add(jassets[i] as string);
                 }
+
+                // Properties
+                AssetBundleInfo bundle = new AssetBundleInfo(
+                    jbundle.GetString("name"),
+                    jbundle.GetLong("size"),
+                    jbundle.GetString("variant"),
+                    jbundle.GetInt("version"),
+                    jbundle.GetString("hash"),
+                    dependList,
+                    assets,
+                    assetPathType);
+
+                // Save
                 AddAssetBundleInfo(bundle);
             }
             return true;
@@ -225,15 +283,15 @@ namespace QuickUnity
                             WWWReadTextTask task = new WWWReadTextTask(filePath);
                             yield return task.Start().WaitForFinish();
                             if (string.IsNullOrEmpty(task.text)) yield break;
-                            table.FromJson(task.text, assetPathType);
+                            table.FromYaml(task.text, assetPathType);
 
                         } break;
-                    case QConfig.Asset.AssetPathType.Server:
+                    case QConfig.Asset.AssetPathType.AssetServer:
                         {
                             FileReadTextTask task = new FileReadTextTask(filePath);
                             yield return task.Start().WaitForFinish();
                             if (string.IsNullOrEmpty(task.text)) yield break;
-                            table.FromJson(task.text, assetPathType);
+                            table.FromYaml(task.text, assetPathType);
 
                         } break;
                     default:

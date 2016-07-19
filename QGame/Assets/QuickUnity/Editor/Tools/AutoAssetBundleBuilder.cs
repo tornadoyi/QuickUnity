@@ -230,12 +230,22 @@ namespace QuickUnity
                 public string name { get; set; }
 
                 [YamlMember(Alias = "size")]
-                public int size { get; set; }
+                public long size { get; set; }
+
+                [YamlMember(Alias = "variant")]
+                public string variant { get; set; }
+
+                [YamlMember(Alias = "version")]
+                public long version { get; set; }
 
                 [YamlMember(Alias = "hash")]
                 public string hash { get; set; }
 
+                [YamlMember(Alias = "dependencies")]
                 public string[] dependencies { get; set; }
+
+                [YamlMember(Alias = "assets")]
+                public string[] assets { get; set; }
             }
 
             [YamlMember(Alias = "asset_bundles")]
@@ -426,6 +436,16 @@ namespace QuickUnity
                 // Name
                 item.name = assetBundleName;
 
+                // Size
+                var fi = new System.IO.FileInfo(assetBundlePath);
+                item.size = fi.Length;
+
+                // Varriant
+                item.variant = string.Empty;
+
+                // Version
+                item.version = 1;
+
                 // Hash
                 Hash128 hash = new Hash128();
                 BuildPipeline.GetHashForAssetBundle(assetBundlePath, out hash);
@@ -433,6 +453,9 @@ namespace QuickUnity
 
                 // Dependencies
                 item.dependencies = manifest.GetAllDependencies(assetBundleName);
+
+                // Assets
+                item.assets = AssetDatabase.GetAssetPathsFromAssetBundle(assetBundleName);
 
                 config.assetBundles.Add(item);
             }

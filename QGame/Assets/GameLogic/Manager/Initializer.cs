@@ -38,7 +38,7 @@ public class Initializer : MonoBehaviour {
         // Download lua
         {
             var task = AssetManager.Start(
-                Setting.streamingAssetsAssetPath,
+                Setting.streamingAssetsPath,
                 Setting.downloadCachePath,
                 Setting.cdnUrl,
                 string.Empty,

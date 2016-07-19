@@ -448,10 +448,10 @@ public class Lua_QuickUnity_AssetManager : LuaObject {
 		}
 	}
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static public int get_serverAssetPath(IntPtr l) {
+	static public int get_assetServerUrl(IntPtr l) {
 		try {
 			pushValue(l,true);
-			pushValue(l,QuickUnity.AssetManager.serverAssetPath);
+			pushValue(l,QuickUnity.AssetManager.assetServerUrl);
 			return 2;
 		}
 		catch(Exception e) {
@@ -459,10 +459,10 @@ public class Lua_QuickUnity_AssetManager : LuaObject {
 		}
 	}
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static public int get_downloadUrl(IntPtr l) {
+	static public int get_downloadCachePath(IntPtr l) {
 		try {
 			pushValue(l,true);
-			pushValue(l,QuickUnity.AssetManager.downloadUrl);
+			pushValue(l,QuickUnity.AssetManager.downloadCachePath);
 			return 2;
 		}
 		catch(Exception e) {
@@ -509,8 +509,8 @@ public class Lua_QuickUnity_AssetManager : LuaObject {
 		addMember(l,LoadGameObject_s);
 		addMember(l,LoadGameObjectAsync_s);
 		addMember(l,"streamingAssetsPath",get_streamingAssetsPath,null,false);
-		addMember(l,"serverAssetPath",get_serverAssetPath,null,false);
-		addMember(l,"downloadUrl",get_downloadUrl,null,false);
+		addMember(l,"assetServerUrl",get_assetServerUrl,null,false);
+		addMember(l,"downloadCachePath",get_downloadCachePath,null,false);
 		addMember(l,"init",get_init,null,false);
 		createTypeMetatable(l,constructor, typeof(QuickUnity.AssetManager),typeof(BaseManager<QuickUnity.AssetManager>));
 	}

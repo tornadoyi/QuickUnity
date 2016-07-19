@@ -9,28 +9,38 @@ namespace QuickUnity
 {
     public class WWWTask : CoroutineTask
     {
+        public delegate System.Object WWWProcessor(WWW www);
+
+        public string url { get; private set;}
+        public WWWForm form { get; private set;}
+        public byte[] postData { get; private set;}
+        public WWWProcessor processor { get; private set;}
+        public Dictionary<string, string> responseHeaders { get; private set;}
+
+        protected Dictionary<string, string> headers { get; private set;}
+
         public WWWTask(string url)
         {
-            _url = url;
+            this.url = url;
         }
 
         public WWWTask(string url, WWWForm form)
         {
-            _url = url;
-            _form = form;
+            this.url = url;
+            this.form = form;
         }
 
         public WWWTask(string url, byte[] postData)
         {
-            _url = url;
-            _postData = postData;
+            this.url = url;
+            this.postData = postData;
         }
 
         public WWWTask(string url, byte[] postData, Dictionary<string, string> headers)
         {
-            _url = url;
-            _postData = postData;
-            _headers = headers;
+            this.url = url;
+            this.postData = postData;
+            this.headers = headers;
         }
 
         protected override IEnumerator OnProcess()
@@ -42,20 +52,20 @@ namespace QuickUnity
             }
 
             WWW www = null;
-            if(_postData != null)
+            if(postData != null)
             {
-                if(_headers != null)
+                if(headers != null)
                 {
-                    www = new WWW(url, _postData, _headers);
+                    www = new WWW(url, postData, headers);
                 }
                 else
                 {
-                    www = new WWW(url, _postData);
+                    www = new WWW(url, postData);
                 }
             }
-            else if(_form != null)
+            else if(form != null)
             {
-                www = new WWW(url, _form);
+                www = new WWW(url, this.form);
             }
             else
             {
@@ -85,7 +95,7 @@ namespace QuickUnity
                 yield break;
             }
 
-            _responseHeaders = www.responseHeaders;
+            this.responseHeaders = www.responseHeaders;
 
             yield return OnProcessWWW(www);
             if (processor != null) processor(www);
@@ -96,29 +106,13 @@ namespace QuickUnity
 
         protected virtual IEnumerator OnProcessWWW(WWW www) { yield break; }
 
-        public string url { get { return _url; } }
-        protected string _url;
 
-        public WWWForm form { get { return _form; } }
-        protected WWWForm _form;
-
-        public byte[] postData { get { return _postData; } }
-        protected byte[] _postData;
-
-        protected Dictionary<string, string> headers { get { return _headers; } }
-        protected Dictionary<string, string> _headers;
-
-        public WWWProcessor processor { get { return _processor; } }
-        protected WWWProcessor _processor;
-
-        public Dictionary<string, string> responseHeaders;
-        protected Dictionary<string, string> _responseHeaders;
-
-        public delegate System.Object WWWProcessor(WWW www);
     }
 
     public class WWWRequest : WWWTask
     {
+        public byte[] bytes { get; private set;}
+
         public WWWRequest(string url) : base(url) { }
 
         public WWWRequest(string url, WWWForm form) : base(url, form) { }
@@ -129,27 +123,28 @@ namespace QuickUnity
 
         protected override IEnumerator OnProcessWWW(WWW www)
         {
-            _bytes = www.bytes;
-            if (_bytes == null || _bytes.Length <= 0) { SetFail(string.Format("WWW can not read any bytes from {0}", _url)); }
+            bytes = www.bytes;
+            if (bytes == null || bytes.Length <= 0) { SetFail(string.Format("WWW can not read any bytes from {0}", url)); }
             yield break;
         }
-
-        public byte[] bytes { get { return _bytes; } }
-        protected byte[] _bytes;
+            
     }
 
     public class WWWReadTextTask : WWWTask
     {
+        public string text { get; private set;}
+        public Encoding encoding { get; private set;}
+
         public WWWReadTextTask(string url)
             : base(url)
         {
-            _encoding = Encoding.UTF8;
+            encoding = Encoding.UTF8;
         }
 
         public WWWReadTextTask(string url, Encoding encoding)
             : base(url)
         {
-            _encoding = encoding;
+            this.encoding = encoding;
         }
 
         protected override IEnumerator OnProcessWWW(WWW www)
@@ -160,8 +155,8 @@ namespace QuickUnity
             {
                 stream = new MemoryStream(www.bytes);
                 sr = new StreamReader(stream, Encoding.UTF8);
-                _text = sr.ReadToEnd();
-                if (string.IsNullOrEmpty(_text)) { SetFail(string.Format("WWW can not read any text from {0}", _url)); }
+                text = sr.ReadToEnd();
+                if (string.IsNullOrEmpty(text)) { SetFail(string.Format("WWW can not read any text from {0}", url)); }
             }
             catch (System.Exception e)
             {
@@ -174,12 +169,7 @@ namespace QuickUnity
             }
             yield break;           
         }
-
-        public string text { get { return _text; } }
-        protected string _text = string.Empty;
-
-        public Encoding encoding { get { return _encoding; } }
-        protected Encoding _encoding;
+            
     }
 
 
@@ -193,10 +183,14 @@ namespace QuickUnity
 
     public class WWWReadBundleTask : WWWTask
     {
+        public AssetBundle assetBundle { get; private set;}
+        public string md5 { get; private set;}
+        public bool isCheckMD5 { get; private set;}
+
         public WWWReadBundleTask(string url, bool isCheckMD5)
             : base(url)
         {
-            _isCheckMD5 = isCheckMD5;
+            this.isCheckMD5 = isCheckMD5;
         }
 
         protected override IEnumerator OnProcessWWW(WWW www)
@@ -206,36 +200,34 @@ namespace QuickUnity
             {
                 AssetBundleCreateRequest request = AssetBundle.LoadFromMemoryAsync(bytes);
                 yield return request;
-                _assetBundle = request.assetBundle;
-                if (isCheckMD5) _md5 = Utility.MD5.Compute(bytes);
+                assetBundle = request.assetBundle;
+                if (isCheckMD5) md5 = Utility.MD5.Compute(bytes);
             }
-            if (_assetBundle == null) { SetFail(string.Format("WWW can not read AssetBundle from {0}", _url)); }
+            if (assetBundle == null) { SetFail(string.Format("WWW can not read AssetBundle from {0}", url)); }
             yield break;
         }
-
-        public AssetBundle assetBundle { get { return _assetBundle; } }
-        protected AssetBundle _assetBundle;
-
-        public string md5 { get { return _md5; } }
-        protected string _md5;
-
-        public bool isCheckMD5 { get { return _isCheckMD5; } }
-        protected bool _isCheckMD5;
+            
     }
 
 
     public class WWWDownloadTask : WWWTask
     {
+        public string fileSavePath { get; private set;}
+        public string expectMD5 { get; private set;}
+        public long expectFileSize { get; private set;}
+        public string md5 { get; private set;}
+        public long fileSize { get; private set;}
+
         public WWWDownloadTask(
             string url, 
             string fileSavePath, 
             string expectMD5,
-            int expectFileSize)
+            long expectFileSize)
             : base(url)
         {
-            _fileSavePath = fileSavePath;
-            _expectMD5 = expectMD5;
-            _expectFileSize = expectFileSize;
+            this.fileSavePath = fileSavePath;
+            this.expectMD5 = expectMD5;
+            this.expectFileSize = expectFileSize;
         }
 
         protected override IEnumerator OnProcessWWW(WWW www)
@@ -245,7 +237,7 @@ namespace QuickUnity
             QFileStream fs = null;
             try
             {
-                string tmpFile = _fileSavePath + QConfig.Network.tempDownloadFileSuffix;
+                string tmpFile = fileSavePath + QConfig.Network.tempDownloadFileSuffix;
                 if (!FileManager.CreateDirectory(fileSavePath))
                 {
                     SetFail(string.Format("Can Not Create Directory For {0}", fileSavePath));
@@ -258,17 +250,17 @@ namespace QuickUnity
                 fs.Write(bytes, 0, length);
                 fs.Flush(true);
 
-                _fileSize = length;
+                fileSize = length;
 
                 success = true;
 
                 /// check MD5
                 /// Bugfix: Close File And Open Again. Maybe a little Probability Failed. It's Dangerous.
                 fs.Seek(0, SeekOrigin.Begin);
-                _md5 = Utility.MD5.Compute(fs);
-                if (!string.IsNullOrEmpty(expectMD5) && _md5 != expectMD5)
+                md5 = Utility.MD5.Compute(fs);
+                if (!string.IsNullOrEmpty(expectMD5) && md5 != expectMD5)
                 {
-                    SetFail(string.Format("Check Md5 {0} Failed from {1}", tmpFile, _url));
+                    SetFail(string.Format("Check {0} Md5  Failed from {1}", tmpFile, url));
                     success = false;
                 }
 
@@ -278,12 +270,12 @@ namespace QuickUnity
                 // change Name
                 if (success)
                 {
-                    if (File.Exists(_fileSavePath))
+                    if (File.Exists(fileSavePath))
                     {
-                        File.Delete(_fileSavePath);
+                        File.Delete(fileSavePath);
                     }
 
-                    File.Move(tmpFile, _fileSavePath);
+                    File.Move(tmpFile, fileSavePath);
                 }
             }
             catch(Exception e)
@@ -302,20 +294,7 @@ namespace QuickUnity
             yield break;
         }
 
-        public string fileSavePath { get { return _fileSavePath; } }
-        protected string _fileSavePath;
 
-        public string expectMD5 { get { return _expectMD5; } }
-        protected string _expectMD5;
-
-        public int expectFileSize { get { return _expectFileSize; } }
-        protected int _expectFileSize = 0;
-
-        public string md5 { get { return _md5; } }
-        protected string _md5;
-
-        public int fileSize { get { return _fileSize; } }
-        protected int _fileSize = 0;
 
     }
 
