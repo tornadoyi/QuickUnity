@@ -221,6 +221,27 @@ namespace QuickUnity
             }
         }
 
+
+        public class BuildConfigFile
+        {
+            public class AssetBundleItem
+            {
+                [YamlMember(Alias = "name")]
+                public string name { get; set; }
+
+                [YamlMember(Alias = "size")]
+                public int size { get; set; }
+
+                [YamlMember(Alias = "hash")]
+                public string hash { get; set; }
+
+                public string[] dependencies { get; set; }
+            }
+
+            [YamlMember(Alias = "asset_bundles")]
+            public List<AssetBundleItem> assetBundles { get; set; }
+        }
+
         public static void BuildAssetBundles(BuildTarget target, Config config)
         {
             var buildPath = FileManager.PathCombine(config.buildPath, target.ToString());
@@ -229,7 +250,11 @@ namespace QuickUnity
             var assetList = CollectTargetAssets(config.rootPath, config.ignoreFilePatterns);
             ProcessFileExtensions(assetList, config.fileExtReplace, true);
             UpdateAssetBundleNames(config);
-            BuildPipeline.BuildAssetBundles(buildPath, config.buildOptions, target);
+
+            var manifest = BuildPipeline.BuildAssetBundles(buildPath, config.buildOptions, target);
+            var content = GenerateBuildConfigFile(buildPath, manifest);
+            File.WriteAllText(Path.Combine(buildPath, "asset_table.yml"), content);
+
             ProcessFileExtensions(assetList, config.fileExtReplace, false);
         }
 
@@ -383,6 +408,37 @@ namespace QuickUnity
                 }
             }
             AssetDatabase.Refresh();
+        }
+
+        public static string GenerateBuildConfigFile(string buildPath, AssetBundleManifest manifest)
+        {
+            var serializer = new YamlDotNet.Serialization.Serializer();
+            var stringBuilder = new StringBuilder();
+            var stringWriter = new StringWriter(stringBuilder);
+            var config = new BuildConfigFile();
+            config.assetBundles = new List<BuildConfigFile.AssetBundleItem>();
+
+            foreach (var assetBundleName in manifest.GetAllAssetBundles())
+            {
+                var item = new BuildConfigFile.AssetBundleItem();
+                var assetBundlePath = FileManager.PathCombine(buildPath, assetBundleName);
+
+                // Name
+                item.name = assetBundleName;
+
+                // Hash
+                Hash128 hash = new Hash128();
+                BuildPipeline.GetHashForAssetBundle(assetBundlePath, out hash);
+                item.hash = hash.ToString();
+
+                // Dependencies
+                item.dependencies = manifest.GetAllDependencies(assetBundleName);
+
+                config.assetBundles.Add(item);
+            }
+
+            serializer.Serialize(stringWriter, config);
+            return stringBuilder.ToString();
         }
     }
 }
