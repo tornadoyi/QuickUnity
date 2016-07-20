@@ -47,6 +47,8 @@ local function LoadScripts(path)
 
 		-- Pages
 		_GameLogic("Pages/TestPage"),
+
+		_Test("TestBehaviour"),
 		
 	}
 	

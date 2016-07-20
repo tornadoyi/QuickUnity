@@ -19,7 +19,7 @@ end
 --Create an class.
 function class(classname, super)
 	-- check
-	if type(classname) ~= "string" then print("invalid class name %s", type(classname)) return end
+	if type(classname) ~= "string" then print(string.format("invalid class name %s", type(classname))) return end
 	if super and type(super) ~= "table" then
         print("Invalid super type %s", type(super))
 		super = nil

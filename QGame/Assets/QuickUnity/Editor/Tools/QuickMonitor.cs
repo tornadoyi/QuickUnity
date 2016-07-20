@@ -132,7 +132,7 @@ namespace QuickUnity
                 }
 
                 {// Reference
-                    var option = GUILayout.Width(80);
+                    //var option = GUILayout.Width(80);
                     if (info == null) GUILayout.Button("Reference", "miniButtonRight");
                     else
                     {

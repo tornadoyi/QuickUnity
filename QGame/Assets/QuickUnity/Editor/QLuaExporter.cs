@@ -80,7 +80,7 @@ namespace QuickUnity
             add(typeof(SymbolText), null);
 
             // Lua
-            add(typeof(QLuaUtility), null);
+            add(typeof(LuaUtility), null);
             add(typeof(LuaComponentType), null);
             add(typeof(LuaComponent), null);
             add(typeof(LuaComponent_Update), null);

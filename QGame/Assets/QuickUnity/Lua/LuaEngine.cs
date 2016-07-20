@@ -234,10 +234,11 @@ namespace QuickUnity
 #if UNITY_EDITOR
             if (UnityEditor.EditorApplication.isPlaying)
 #endif
-                LuaCoroutine.reg(L, this);
+                //LuaCoroutine.reg(L, this);
 #endif
-            Helper.reg(L);
-            LuaValueType.reg(L);
+            //Helper.reg(L);
+            //LuaValueType.reg(L);
+            LuaHelper.reg(L);
 
             if ((flag & LuaSvrFlag.LSF_EXTLIB) != 0)
                 LuaDLL.luaS_openextlibs(L);

@@ -4,7 +4,7 @@ using System;
 
 namespace QuickUnity
 {
-    public static class QLuaUtility
+    public static class LuaUtility
     {
         // Operation
         public static int And(int x , int y) { return x & y; }

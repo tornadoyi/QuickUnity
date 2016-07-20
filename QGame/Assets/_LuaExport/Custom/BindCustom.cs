@@ -65,7 +65,7 @@ namespace SLua {
 				Lua_QuickUnity_SymbolWidget.reg,
 				Lua_QuickUnity_SymbolImage.reg,
 				Lua_QuickUnity_SymbolText.reg,
-				Lua_QuickUnity_QLuaUtility.reg,
+				Lua_QuickUnity_LuaUtility.reg,
 				Lua_QuickUnity_LuaComponentType.reg,
 				Lua_QuickUnity_LuaComponent.reg,
 				Lua_QuickUnity_LuaComponent_Update.reg,
