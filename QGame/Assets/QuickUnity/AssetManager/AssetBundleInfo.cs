@@ -149,7 +149,7 @@ namespace QuickUnity
 
             // Create task
             loadTask = new LoadOrDownloadAssetBundleTask(this);
-            loadTask.Finish((result) =>
+            loadTask.Finish((_) =>
             {
                 var task = loadTask;
                 loadTask = null;

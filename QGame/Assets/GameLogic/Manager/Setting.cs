@@ -49,6 +49,8 @@ public class Setting : Singleton<Setting>
 
     public static string luaAssetBundleName { get{ return "lua"; }}
 
+    public static string luaFileExtension { get{ return loadLuaFromAssetBundle ? "bytes" : "lua"; }}
+
     /// <summary>
     /// Symbol settings
     /// </summary>

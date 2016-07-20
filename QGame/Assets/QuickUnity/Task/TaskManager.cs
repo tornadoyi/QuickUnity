@@ -280,8 +280,8 @@ namespace QuickUnity
             for(int i=0; i<finishCallbacks.Count; ++i)
             {
                 var item = finishCallbacks[i];
-                if (item.result != result ||
-                    item.errorCode != errorCode) continue;
+                if (item.result != result && (item.result & result) == 0) continue;
+                if (item.errorCode != errorCode && (item.errorCode & errorCode) == 0) continue;
                 item.callback(this);
             }
             finishCallbacks.Clear();

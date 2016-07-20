@@ -57,6 +57,7 @@ public class Initializer : MonoBehaviour {
             Debug.LogFormat("Load lua {0}", task.success ? "success" : "fail");
         }
 
+
         LuaLoaderHelper.PushLuaLoader(Setting.luaAssetBundleName);
 
         QConfig.Asset.loadAssetFromAssetBundle = false;

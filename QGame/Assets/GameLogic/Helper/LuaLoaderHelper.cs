@@ -19,15 +19,15 @@ public class LuaLoaderHelper
             }
         }
 
+        var ext = "." + Setting.luaFileExtension; 
         LuaEngine.PushLuaLoader((fn) =>
         {
             fn = fn.Replace(".", "/");
-            fn += ".lua";
+            fn += ext;
 
             byte[] bytes = null;
             if (Setting.loadLuaFromAssetBundle)
             {
-                Debug.Log("load form bundle");
                 var protoType = bundle.LoadAsset(fn);
                 if (protoType != null)
                 {
