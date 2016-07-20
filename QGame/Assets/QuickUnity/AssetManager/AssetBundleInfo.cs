@@ -286,7 +286,7 @@ namespace QuickUnity
 
                 // Load self when all dependencies has loaded before
                 {
-                    var task = new LoadAssetBundleTask(assetBundleInfo.cachePath, assetBundleInfo.pathType, assetBundleInfo.hash);
+                    var task = new LoadAssetBundleTask(assetBundleInfo.url, assetBundleInfo.pathType, assetBundleInfo.hash);
                     yield return task.Start().WaitForFinish();
                     if(task.fail)
                     {
@@ -301,32 +301,22 @@ namespace QuickUnity
 
         protected class LoadAssetBundleTask : CoroutineTask
         {
-            public AssetBundle assetBundle { get { return _assetBundle; } }
-            protected AssetBundle _assetBundle;
-
-            public string path { get { return _path; } }
-            protected string _path;
-
-            public string md5 { get { return _md5; } }
-            protected string _md5 = string.Empty;
-
-            public QConfig.Asset.AssetPathType pathType { get { return _pathType; } }
-            protected QConfig.Asset.AssetPathType _pathType;
-
-            public string expectMD5 { get { return _expectMD5; } }
-            protected string _expectMD5 = string.Empty;
-
+            public AssetBundle assetBundle { get; private set; }
+            public string path { get; private set; }
+            public string md5 { get; private set; }
+            public QConfig.Asset.AssetPathType pathType { get; private set; }
+            public string expectMD5 { get; private set; }
             public LoadAssetBundleTask(string path, QConfig.Asset.AssetPathType pathType)
             {
-                _path = path;
-                _pathType = pathType;
+                this.path = path;
+                this.pathType = pathType;
             }
 
             public LoadAssetBundleTask(string path, QConfig.Asset.AssetPathType pathType, string expectMD5)
             {
-                _path = path;
-                _pathType = pathType;
-                _expectMD5 = expectMD5;
+                this.path = path;
+                this.pathType = pathType;
+                this.expectMD5 = expectMD5;
             }
 
             protected override IEnumerator OnProcess()
@@ -341,7 +331,7 @@ namespace QuickUnity
                             yield return task.Start().WaitForFinish();
                             if (task.bytes == null)
                             {
-                                SetFail(string.Format("Can not load bundle from path {0}", _path), task.error);
+                                SetFail(string.Format("Can not load {0} bundle from {1}", pathType.ToString(), path), task.error);
                                 yield break;
                             }
                             bytes = task.bytes;
@@ -355,7 +345,7 @@ namespace QuickUnity
                             yield return task.WaitForFinish();
                             if (task.bytes == null)
                             {
-                                SetFail(string.Format("Can not load bundle from path {0}", _path), task.error);
+                                SetFail(string.Format("Can not load {0} bundle from {1}", pathType.ToString(), path), task.error);
                                 yield break;
                             }
                             bytes = task.bytes;
@@ -371,22 +361,22 @@ namespace QuickUnity
 
                 if (bytes == null) yield break;
 
-                if (!string.IsNullOrEmpty(_expectMD5) && pathType == QConfig.Asset.AssetPathType.AssetServer)
+                if (!string.IsNullOrEmpty(expectMD5) && pathType == QConfig.Asset.AssetPathType.AssetServer)
                 {
-                    _md5 = Utility.MD5.Compute(bytes);
-                    if (_md5 != _expectMD5)
+                    md5 = Utility.MD5.Compute(bytes);
+                    if (md5 != expectMD5)
                     {
-                        SetFail(string.Format("{0} MD5 check failed, expected {1}, current {2}", _path, _expectMD5, _md5));
+                        SetFail(string.Format("{0} MD5 check failed, expected {1}, current {2}", path, expectMD5, md5));
                         System.IO.File.Delete(path);
                         yield break;
                     }
                 }
                 AssetBundleCreateRequest request = AssetBundle.LoadFromMemoryAsync(bytes);
                 yield return request;
-                _assetBundle = request.assetBundle;
-                if (_assetBundle == null)
+                assetBundle = request.assetBundle;
+                if (assetBundle == null)
                 {
-                    SetFail(string.Format("Create bundle from memory failed, path:{0}", _path));
+                    SetFail(string.Format("Create bundle from memory failed, path:{0}", path));
                     yield break;
                 }
             }

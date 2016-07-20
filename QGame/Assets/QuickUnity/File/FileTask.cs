@@ -21,7 +21,7 @@ namespace QuickUnity
                 }
                 if (!File.Exists(filePath))
                 {
-                    SetFail(string.Format("File {0} not exist", filePath));
+                    SetFail(string.Format("File read fail, {0} not exist", filePath));
                     return;
                 }
 

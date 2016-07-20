@@ -43,8 +43,8 @@ public class Initializer : MonoBehaviour {
         {
             var task = AssetManager.Start(
                 Setting.streamingAssetsPath,
-                Setting.downloadCachePath,
                 Setting.cdnUrl,
+                Setting.downloadCachePath,
                 Setting.streamingAssetsTableFilePath,
                 Setting.serverTableFilePath);
             yield return task.WaitForFinish();
