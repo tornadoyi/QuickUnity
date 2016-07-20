@@ -10,7 +10,7 @@ namespace QuickUnity
         public long size { get; private set;}
         public string variant { get; private set;}
         public long version { get; private set;}
-        public string hash { get; private set;}
+        public string md5 { get; private set;}
         public QConfig.Asset.AssetPathType pathType { get; private set;}
         public List<string> dependList { get; private set;}
 
@@ -77,7 +77,7 @@ namespace QuickUnity
             long size, 
             string variant, 
             long version, 
-            string hash, 
+            string md5, 
             List<string> dependList,
             List<string> assetList,
             QConfig.Asset.AssetPathType pathType)
@@ -86,7 +86,7 @@ namespace QuickUnity
             this.size = size;
             this.variant = variant;
             this.version = version;
-            this.hash = hash;
+            this.md5 = md5;
             this.dependList = dependList;
             this.pathType = pathType;
 
@@ -286,7 +286,7 @@ namespace QuickUnity
 
                 // Load self when all dependencies has loaded before
                 {
-                    var task = new LoadAssetBundleTask(assetBundleInfo.url, assetBundleInfo.pathType, assetBundleInfo.hash);
+                    var task = new LoadAssetBundleTask(assetBundleInfo);
                     yield return task.Start().WaitForFinish();
                     if(task.fail)
                     {
@@ -302,36 +302,33 @@ namespace QuickUnity
         protected class LoadAssetBundleTask : CoroutineTask
         {
             public AssetBundle assetBundle { get; private set; }
-            public string path { get; private set; }
-            public string md5 { get; private set; }
-            public QConfig.Asset.AssetPathType pathType { get; private set; }
-            public string expectMD5 { get; private set; }
-            public LoadAssetBundleTask(string path, QConfig.Asset.AssetPathType pathType)
-            {
-                this.path = path;
-                this.pathType = pathType;
-            }
+            public AssetBundleInfo assetBunleInfo { get; private set; }
 
-            public LoadAssetBundleTask(string path, QConfig.Asset.AssetPathType pathType, string expectMD5)
+            public LoadAssetBundleTask(AssetBundleInfo assetBunleInfo)
             {
-                this.path = path;
-                this.pathType = pathType;
-                this.expectMD5 = expectMD5;
+                this.assetBunleInfo = assetBunleInfo;
             }
 
             protected override IEnumerator OnProcess()
             {
+                if(assetBunleInfo == null)
+                {
+                    SetFail("Can not load asset bundle (null)");
+                    yield break;
+                }
+
                 // Load self
                 byte[] bytes = null;
-                switch (pathType)
+                switch (assetBunleInfo.pathType)
                 {
                     case QConfig.Asset.AssetPathType.AssetServer:
                         {
-                            FileReadBytesTask task = new FileReadBytesTask(path);
+                            FileReadBytesTask task = new FileReadBytesTask(assetBunleInfo.cachePath);
                             yield return task.Start().WaitForFinish();
                             if (task.bytes == null)
                             {
-                                SetFail(string.Format("Can not load {0} bundle from {1}", pathType.ToString(), path), task.error);
+                                SetFail(string.Format("Can not load {0} bundle from {1}", 
+                                    assetBunleInfo.pathType.ToString(), assetBunleInfo.cachePath), task.error);
                                 yield break;
                             }
                             bytes = task.bytes;
@@ -341,11 +338,12 @@ namespace QuickUnity
 
                     case QConfig.Asset.AssetPathType.StreamingAssets:
                         {
-                            WWWReadBytesTask task = HttpManager.GetBytes(path, QConfig.Network.wwwReadFileTimeout);
+                            WWWReadBytesTask task = HttpManager.GetBytes(assetBunleInfo.url, QConfig.Network.wwwReadFileTimeout);
                             yield return task.WaitForFinish();
                             if (task.bytes == null)
                             {
-                                SetFail(string.Format("Can not load {0} bundle from {1}", pathType.ToString(), path), task.error);
+                                SetFail(string.Format("Can not load {0} bundle from {1}", 
+                                    assetBunleInfo.pathType.ToString(), assetBunleInfo.url), task.error);
                                 yield break;
                             }
                             bytes = task.bytes;
@@ -354,20 +352,21 @@ namespace QuickUnity
 
                     default:
                         {
-                            SetFail(string.Format("Invalid path type {0}", pathType.GetType().Name));
+                            SetFail(string.Format("Invalid path type {0}", assetBunleInfo.pathType.GetType().Name));
                         }
                         yield break;
                 }
 
                 if (bytes == null) yield break;
 
-                if (!string.IsNullOrEmpty(expectMD5) && pathType == QConfig.Asset.AssetPathType.AssetServer)
+                if (!string.IsNullOrEmpty(assetBunleInfo.md5) && assetBunleInfo.pathType == QConfig.Asset.AssetPathType.AssetServer)
                 {
-                    md5 = Utility.MD5.Compute(bytes);
-                    if (md5 != expectMD5)
+                    var md5 = Utility.MD5.Compute(bytes);
+                    if (md5 != assetBunleInfo.md5)
                     {
-                        SetFail(string.Format("{0} MD5 check failed, expected {1}, current {2}", path, expectMD5, md5));
-                        System.IO.File.Delete(path);
+                        SetFail(string.Format("{0} MD5 check failed, expected {1}, current {2}",
+                            assetBunleInfo.cachePath, assetBunleInfo.md5, md5));
+                        System.IO.File.Delete(assetBunleInfo.cachePath);
                         yield break;
                     }
                 }
@@ -376,7 +375,7 @@ namespace QuickUnity
                 assetBundle = request.assetBundle;
                 if (assetBundle == null)
                 {
-                    SetFail(string.Format("Create bundle from memory failed, path:{0}", path));
+                    SetFail(string.Format("Create bundle from memory failed, name:{0}", assetBunleInfo.name));
                     yield break;
                 }
             }
@@ -411,7 +410,7 @@ namespace QuickUnity
                 // Download self
                 if(assetBundleInfo.fromAssetServer && !assetBundleInfo.fileExists)
                 {
-                    var task = HttpManager.Download(assetBundleInfo.url, assetBundleInfo.cachePath, assetBundleInfo.hash, assetBundleInfo.size);
+                    var task = HttpManager.Download(assetBundleInfo.url, assetBundleInfo.cachePath, assetBundleInfo.md5, assetBundleInfo.size);
                     yield return task.WaitForFinish();
                     if (task.fail)
                     {

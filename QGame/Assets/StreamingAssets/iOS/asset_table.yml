@@ -3,39 +3,39 @@ asset_bundles:
   size: 66143
   variant: ''
   version: 1
-  hash: c9f622001c081610ebe7629b0b48a28b
+  md5: 3653cecf92f335aa76e279286eca3cfb
   dependencies: []
   assets:
   - Assets/_Assets/Atlases/Main.png
 - name: background/12_3
-  size: 549096
+  size: 548240
   variant: ''
   version: 1
-  hash: bbf9b765245720393072b038e042558b
+  md5: 7cca52f12659ad10cd5aee92886a2b23
   dependencies: []
   assets:
   - Assets/_Assets/Background/12_3.png
 - name: background/4_1
-  size: 533991
+  size: 534519
   variant: ''
   version: 1
-  hash: 5ec042a96daa2a5f8c432a934ea8cd83
+  md5: 4fdf5464a962bfd009d5f34d60f2143e
   dependencies: []
   assets:
   - Assets/_Assets/Background/4_1.png
 - name: background/9_1
-  size: 524732
+  size: 524902
   variant: ''
   version: 1
-  hash: 887fe8924b5a4fc16a77197294ad5b0f
+  md5: 790d62e04f40c90ebaf3d885f9ca39d7
   dependencies: []
   assets:
   - Assets/_Assets/Background/9_1.png
 - name: lua
-  size: 16288
+  size: 16342
   variant: ''
   version: 1
-  hash: 41487fa2792d80065e5809a95935fad3
+  md5: 4b54a6ac9233c0a598c8d50e045888c5
   dependencies: []
   assets:
   - Assets/_Assets/Lua/AppDelegate.bytes
@@ -65,10 +65,10 @@ asset_bundles:
   - Assets/_Assets/Lua/GameLogic/Common/PageController.bytes
   - Assets/_Assets/Lua/GameLogic/Pages/TestPage.bytes
 - name: pages/test
-  size: 6014
+  size: 6013
   variant: ''
   version: 1
-  hash: 778abc7692857569884ab179849199ff
+  md5: 047f31fb9c55d2bc90e95e59670136f6
   dependencies:
   - atlases/main
   - background/4_1
@@ -78,7 +78,7 @@ asset_bundles:
   size: 9557
   variant: ''
   version: 1
-  hash: 8cb465836025fc357308862c14d1d1c5
+  md5: 52e4304870716dd12ea3b0e6604c9d56
   dependencies: []
   assets:
   - Assets/_Assets/Sprites/home.png
@@ -86,7 +86,7 @@ asset_bundles:
   size: 7963
   variant: ''
   version: 1
-  hash: a8a5f1225842fd37a4b63328dc00ebea
+  md5: d4648c9c604b21f672bbf2a49ca313e5
   dependencies: []
   assets:
   - Assets/_Assets/Sprites/menu.png
@@ -94,7 +94,7 @@ asset_bundles:
   size: 12187
   variant: ''
   version: 1
-  hash: 9611b531f843c1ee711cca22fd855c9e
+  md5: 37ab6eac186731fc2535e26cb4c88862
   dependencies: []
   assets:
   - Assets/_Assets/Sprites/test.png

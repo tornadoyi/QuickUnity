@@ -3,7 +3,7 @@ asset_bundles:
   size: 66143
   variant: ''
   version: 1
-  hash: f36c5aefd435166a02606deb2b6fe8e3
+  md5: ab10f600729ad72e2ff673635801cab2
   dependencies: []
   assets:
   - Assets/_Assets/Atlases/Main.png
@@ -11,7 +11,7 @@ asset_bundles:
   size: 319527
   variant: ''
   version: 1
-  hash: 6fcebd04fc14d2aa1f1d9b5c64482d76
+  md5: 8bcb6da8d00497aa5e39943e0bce0dc9
   dependencies: []
   assets:
   - Assets/_Assets/Background/12_3.png
@@ -19,23 +19,23 @@ asset_bundles:
   size: 323537
   variant: ''
   version: 1
-  hash: 7e4e800d4bce6e9bc21712d995e8a058
+  md5: dfc0859f75f66eac586a3157f1dd4dad
   dependencies: []
   assets:
   - Assets/_Assets/Background/4_1.png
 - name: background/9_1
-  size: 369567
+  size: 369676
   variant: ''
   version: 1
-  hash: 7b5b912671b69ae65dd350234ffffffc
+  md5: 8af1b6580417b7d38ebff2289191fdd6
   dependencies: []
   assets:
   - Assets/_Assets/Background/9_1.png
 - name: lua
-  size: 16287
+  size: 16341
   variant: ''
   version: 1
-  hash: a6ea66bea0e02386a7809df32dc50f91
+  md5: 0e59a6249a43f884781aae42b25b00f4
   dependencies: []
   assets:
   - Assets/_Assets/Lua/AppDelegate.bytes
@@ -65,10 +65,10 @@ asset_bundles:
   - Assets/_Assets/Lua/GameLogic/Common/PageController.bytes
   - Assets/_Assets/Lua/GameLogic/Pages/TestPage.bytes
 - name: pages/test
-  size: 6016
+  size: 6015
   variant: ''
   version: 1
-  hash: 34e918e20f96d4139ee8e09ae750a7b9
+  md5: 8ddc83aec6aee6c407215bd63bbfeab3
   dependencies:
   - atlases/main
   - background/4_1
@@ -78,7 +78,7 @@ asset_bundles:
   size: 9557
   variant: ''
   version: 1
-  hash: d568fce16e4d43688eba540631c61d14
+  md5: 24d12cedf0da6ef733462ca7a001c407
   dependencies: []
   assets:
   - Assets/_Assets/Sprites/home.png
@@ -86,7 +86,7 @@ asset_bundles:
   size: 7963
   variant: ''
   version: 1
-  hash: 923cb8ab2cfa53f8d416d12698dd5ee1
+  md5: a4638c4d2eec055eb2e66b271212af55
   dependencies: []
   assets:
   - Assets/_Assets/Sprites/menu.png
@@ -94,7 +94,7 @@ asset_bundles:
   size: 12187
   variant: ''
   version: 1
-  hash: 6847af0b35429195e48015f1cdcab59e
+  md5: 894ba012e8eeb87b23b2137ed1eaf256
   dependencies: []
   assets:
   - Assets/_Assets/Sprites/test.png

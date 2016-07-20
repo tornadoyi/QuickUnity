@@ -151,7 +151,7 @@ namespace QuickUnity
                     md5 = Utility.MD5.Compute(fs);
                     if (!string.IsNullOrEmpty(expectMD5) && md5 != expectMD5)
                     {
-                        SetFail(string.Format("Check Md5 {0} Failed from {1}", tmpFile, url));
+                        SetFail(string.Format("Check md5 failed, md5:{0} expected:{1} file:{2}", md5, expectMD5, url));
                         success = false;
                     }
 

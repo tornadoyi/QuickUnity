@@ -43,10 +43,6 @@ public class Setting : Singleton<Setting>
 
     public static string languageFilePath { get{ return "Setting/Language";}}
 
-    public static string streamingAssetsTableFilePath { get{ return FileManager.PathCombine(streamingAssetsPath, assetTableFileName); }}
-
-    public static string serverTableFilePath { get{ return FileManager.PathCombine(downloadCachePath, assetTableFileName); }}
-
     public static string luaAssetBundleName { get{ return "lua"; }}
 
     public static string luaFileExtension { get{ return loadLuaFromAssetBundle ? "bytes" : "lua"; }}

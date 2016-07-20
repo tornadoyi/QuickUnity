@@ -238,8 +238,8 @@ namespace QuickUnity
                 [YamlMember(Alias = "version")]
                 public long version { get; set; }
 
-                [YamlMember(Alias = "hash")]
-                public string hash { get; set; }
+                [YamlMember(Alias = "md5")]
+                public string md5 { get; set; }
 
                 [YamlMember(Alias = "dependencies")]
                 public string[] dependencies { get; set; }
@@ -447,9 +447,8 @@ namespace QuickUnity
                 item.version = 1;
 
                 // Hash
-                Hash128 hash = new Hash128();
-                BuildPipeline.GetHashForAssetBundle(assetBundlePath, out hash);
-                item.hash = hash.ToString();
+                var bytes = FileManager.LoadBinaryFile(assetBundlePath);
+                item.md5 = Utility.MD5.Compute(bytes);
 
                 // Dependencies
                 item.dependencies = manifest.GetAllDependencies(assetBundleName)

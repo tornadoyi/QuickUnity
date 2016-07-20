@@ -201,7 +201,7 @@ namespace QuickUnity
                     Convert.ToInt64(node.Children[new YamlScalarNode("size")].ToString()), 
                     node.Children[new YamlScalarNode("variant")].ToString(), 
                     Convert.ToInt64(node.Children[new YamlScalarNode("version")].ToString()),
-                    node.Children[new YamlScalarNode("hash")].ToString(),
+                    node.Children[new YamlScalarNode("md5")].ToString(),
                     depends,
                     assets,
                     assetPathType);
@@ -258,7 +258,7 @@ namespace QuickUnity
                     jbundle.GetLong("size"),
                     jbundle.GetString("variant"),
                     jbundle.GetInt("version"),
-                    jbundle.GetString("hash"),
+                    jbundle.GetString("md5"),
                     dependList,
                     assets,
                     assetPathType);

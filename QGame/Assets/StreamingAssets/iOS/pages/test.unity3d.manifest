@@ -1,5 +1,5 @@
 ManifestFileVersion: 0
-CRC: 516505032
+CRC: 195054500
 Hashes:
   AssetFileHash:
     serializedVersion: 2
@@ -40,5 +40,5 @@ ClassTypes:
 Assets:
 - Assets/_Assets/Pages/Test/TestPage.prefab
 Dependencies:
-- /Users/Jason/Work/QuickUnity/ci/assetbunlde_build/iOS/atlases/main.unity3d
-- /Users/Jason/Work/QuickUnity/ci/assetbunlde_build/iOS/background/4_1.unity3d
+- D:/QuickUnity/ci/assetbunlde_build/iOS/background/4_1.unity3d
+- D:/QuickUnity/ci/assetbunlde_build/iOS/atlases/main.unity3d

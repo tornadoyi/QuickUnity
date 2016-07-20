@@ -26,18 +26,17 @@ public class Initializer : MonoBehaviour {
         yield return LuaEngine.Start().WaitForFinish();
 
         // Download asset config
-        /*
+
+        bool useServerAssetTable = true;
         {
             var task = HttpManager.Download(
                 FileManager.PathCombine(Setting.cdnUrl, Setting.assetTableFileName),
                 FileManager.PathCombine(Setting.downloadCachePath, Setting.assetTableFileName));
             yield return task.WaitForFinish();
-            if(task.fail)
-            {
-                Debug.LogError("Download asset config fail");
-            }
+            useServerAssetTable = task.success;
+            Debug.LogFormat("Download asset config {0}", task.fail ? "fail" : "success");
         }
-        */
+        
 
         // Download asset table
         {
@@ -45,8 +44,8 @@ public class Initializer : MonoBehaviour {
                 Setting.streamingAssetsPath,
                 Setting.cdnUrl,
                 Setting.downloadCachePath,
-                Setting.streamingAssetsTableFilePath,
-                Setting.serverTableFilePath);
+                FileManager.PathCombine(Setting.streamingAssetsPath, Setting.assetTableFileName),
+                !useServerAssetTable ? string.Empty : FileManager.PathCombine(Setting.downloadCachePath, Setting.assetTableFileName));
             yield return task.WaitForFinish();
         }
 
@@ -54,7 +53,15 @@ public class Initializer : MonoBehaviour {
         {
             var task = AssetManager.LoadAssetBundle(Setting.luaAssetBundleName);
             yield return task.WaitForFinish();
-            Debug.LogFormat("Load lua {0}", task.success ? "success" : "fail");
+            if(task.success)
+            {
+                Debug.Log("Load lua success");
+            }
+            else
+            {
+                Debug.LogErrorFormat("Load lua fail, error: {0}", task.error);
+                yield break;
+            }
         }
 
 

@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 3629637163
+CRC: 764280319
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: 41487fa2792d80065e5809a95935fad3
+    Hash: 01733c4ac269aba13df325bf8eec7acb
   TypeTreeHash:
     serializedVersion: 2
     Hash: 1033bf7ddfd4c6d43e7a6382c0a0a61a
@@ -12,30 +12,30 @@ ClassTypes:
 - Class: 49
   Script: {instanceID: 0}
 Assets:
-- Assets/_Assets/Lua/Common/Debug.bytes
 - Assets/_Assets/Lua/Framework/Serial.bytes
-- Assets/_Assets/Lua/Framework/LuaBehaviour.bytes
-- Assets/_Assets/Lua/Framework/Log.bytes
-- Assets/_Assets/Lua/Framework/STL.bytes
-- Assets/_Assets/Lua/Framework/Class.bytes
-- Assets/_Assets/Lua/Framework/LevelManager.bytes
-- Assets/_Assets/Lua/Framework/DataManager.bytes
-- Assets/_Assets/Lua/GameLogic/Common/PageController.bytes
-- Assets/_Assets/Lua/GameLogic/Pages/TestPage.bytes
-- Assets/_Assets/Lua/Framework/Extension.bytes
-- Assets/_Assets/Lua/AppDelegate.bytes
-- Assets/_Assets/Lua/GameLogic/Common/GameController.bytes
 - Assets/_Assets/Lua/Framework/Callbacker.bytes
-- Assets/_Assets/Lua/Framework/LuaTask.bytes
-- Assets/_Assets/Lua/Common/GameDefine.bytes
-- Assets/_Assets/Lua/Common/Formula.bytes
-- Assets/_Assets/Lua/Common/GameManager.bytes
-- Assets/_Assets/Lua/Framework/GameSceneManager.bytes
-- Assets/_Assets/Lua/Common/ScriptLoader.bytes
-- Assets/_Assets/Lua/Framework/InputPlatform.bytes
-- Assets/_Assets/Lua/Framework/Utility.bytes
 - Assets/_Assets/Lua/Common/Config.bytes
-- Assets/_Assets/Lua/Framework/UserData.bytes
 - Assets/_Assets/Lua/Common/EventDefine.bytes
+- Assets/_Assets/Lua/GameLogic/Pages/TestPage.bytes
+- Assets/_Assets/Lua/Common/GameManager.bytes
+- Assets/_Assets/Lua/Framework/STL.bytes
 - Assets/_Assets/Lua/Common/AssetLoader.bytes
+- Assets/_Assets/Lua/Framework/GameSceneManager.bytes
+- Assets/_Assets/Lua/Framework/Extension.bytes
+- Assets/_Assets/Lua/Framework/DataManager.bytes
+- Assets/_Assets/Lua/Framework/InputPlatform.bytes
+- Assets/_Assets/Lua/Framework/Log.bytes
+- Assets/_Assets/Lua/Common/Debug.bytes
+- Assets/_Assets/Lua/Framework/LuaBehaviour.bytes
+- Assets/_Assets/Lua/Framework/LevelManager.bytes
+- Assets/_Assets/Lua/GameLogic/Common/PageController.bytes
+- Assets/_Assets/Lua/Common/Formula.bytes
+- Assets/_Assets/Lua/AppDelegate.bytes
+- Assets/_Assets/Lua/Framework/LuaTask.bytes
+- Assets/_Assets/Lua/Framework/Class.bytes
+- Assets/_Assets/Lua/GameLogic/Common/GameController.bytes
+- Assets/_Assets/Lua/Common/ScriptLoader.bytes
+- Assets/_Assets/Lua/Framework/Utility.bytes
+- Assets/_Assets/Lua/Framework/UserData.bytes
+- Assets/_Assets/Lua/Common/GameDefine.bytes
 Dependencies: []

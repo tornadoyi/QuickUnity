@@ -1,33 +1,33 @@
 ManifestFileVersion: 0
-CRC: 2479734655
+CRC: 2333402339
 AssetBundleManifest:
   AssetBundleInfos:
     Info_0:
-      Name: sprites/test.unity3d
-      Dependencies: {}
-    Info_1:
-      Name: atlases/main.unity3d
-      Dependencies: {}
-    Info_2:
       Name: background/9_1.unity3d
       Dependencies: {}
+    Info_1:
+      Name: background/4_1.unity3d
+      Dependencies: {}
+    Info_2:
+      Name: sprites/test.unity3d
+      Dependencies: {}
     Info_3:
-      Name: sprites/menu.unity3d
+      Name: atlases/main.unity3d
       Dependencies: {}
     Info_4:
-      Name: background/4_1.unity3d
+      Name: background/12_3.unity3d
       Dependencies: {}
     Info_5:
       Name: sprites/home.unity3d
       Dependencies: {}
     Info_6:
-      Name: background/12_3.unity3d
+      Name: sprites/menu.unity3d
       Dependencies: {}
     Info_7:
       Name: pages/test.unity3d
       Dependencies:
-        Dependency_0: atlases/main.unity3d
-        Dependency_1: background/4_1.unity3d
+        Dependency_0: background/4_1.unity3d
+        Dependency_1: atlases/main.unity3d
     Info_8:
       Name: lua.unity3d
       Dependencies: {}
