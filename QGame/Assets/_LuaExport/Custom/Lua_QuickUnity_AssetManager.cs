@@ -194,18 +194,6 @@ public class Lua_QuickUnity_AssetManager : LuaObject {
 		}
 	}
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static public int GetAssetTable_s(IntPtr l) {
-		try {
-			var ret=QuickUnity.AssetManager.GetAssetTable();
-			pushValue(l,true);
-			pushValue(l,ret);
-			return 2;
-		}
-		catch(Exception e) {
-			return error(l,e);
-		}
-	}
-	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
 	static public int LoadAudioClip_s(IntPtr l) {
 		try {
 			System.String a1;
@@ -490,7 +478,6 @@ public class Lua_QuickUnity_AssetManager : LuaObject {
 		addMember(l,GetAssetBundle_s);
 		addMember(l,SetAssetBundleKeepTag_s);
 		addMember(l,SetAssetKeepTag_s);
-		addMember(l,GetAssetTable_s);
 		addMember(l,LoadAudioClip_s);
 		addMember(l,LoadAudioClipAsync_s);
 		addMember(l,LoadFont_s);

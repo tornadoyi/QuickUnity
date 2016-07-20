@@ -147,6 +147,7 @@ namespace QuickUnity
         }
 
 #if UNITY_EDITOR
+        [SLua.DoNotToLua]
         public static AssetTable GetAssetTable() { return instance == null ? null : instance.assetTable; }
 #endif
 
