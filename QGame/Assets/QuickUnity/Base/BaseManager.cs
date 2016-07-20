@@ -18,7 +18,10 @@ public class BaseManager<T> : MonoBehaviour where T : MonoBehaviour, new()
     {
         get
         {
-            if (_instance == null) Debug.LogError(string.Format("Invalid manager({0}) access", typeof(T).Name));
+            if(Application.isPlaying)
+            {
+                if (_instance == null) Debug.LogError(string.Format("Invalid manager({0}) access", typeof(T).Name));
+            }
             return _instance;
         }
     }

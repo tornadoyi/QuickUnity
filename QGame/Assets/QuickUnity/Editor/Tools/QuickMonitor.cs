@@ -7,6 +7,12 @@ namespace QuickUnity
 {
     public class QuickMonitor : EditorWindow
     {
+        protected string searchText;
+        protected int tabIndex = 0;
+
+        protected Vector2 scrollPos;
+        
+
         [MenuItem("QuickUnity/Tools/Monitor")]
         public static void ShowWindow()
         {
@@ -20,8 +26,8 @@ namespace QuickUnity
         {
             using (QuickEditor.BeginHorizontal())
             {
-                if (GUILayout.Toggle(tabIndex == 0, "Task", "ButtonLeft")) tabIndex = 0;
-                if (GUILayout.Toggle(tabIndex == 1, "Asset", "ButtonRight")) tabIndex = 1;
+                if (GUILayout.Toggle(tabIndex == 0, "Task", "ButtonLeft")) ChangeTab(0);
+                if (GUILayout.Toggle(tabIndex == 1, "Asset", "ButtonRight")) ChangeTab(1);
             }
 
             GUILayout.Space(10);
@@ -36,6 +42,13 @@ namespace QuickUnity
         void Update()
         {
             Repaint();
+        }
+
+        void ChangeTab(int index)
+        {
+            if (tabIndex == index) return;
+            tabIndex = index;
+            searchText = string.Empty;
         }
 
         void DrawTaskMonitor()
@@ -100,31 +113,33 @@ namespace QuickUnity
                 style.alignment = TextAnchor.MiddleCenter;
 
                 {// Name
-                    var option = GUILayout.Width(100f);
+                    var option = GUILayout.Width(200f);
                     if (info == null) GUILayout.Button("Name", "miniButtonLeft", option);
                     else
                     {
-                        EditorGUILayout.LabelField(info.name, style, option);
+                        EditorGUILayout.SelectableLabel(info.name, style, option);
                     }
                 }
 
 
                 {// Type
-                    var option = GUILayout.Width(100f);
+                    var option = GUILayout.Width(150);
                     if (info == null) GUILayout.Button("Type", "miniButtonMid", option);
                     else
                     {
-                        EditorGUILayout.LabelField(info.pathType.ToString(), style, option);
+                        EditorGUILayout.SelectableLabel(info.pathType.ToString(), style, option);
                     }
                 }
 
-                {// Path
-                    if (info == null) GUILayout.Button("Path", "miniButtonRight");
+                {// Reference
+                    var option = GUILayout.Width(80);
+                    if (info == null) GUILayout.Button("Reference", "miniButtonRight");
                     else
                     {
-                        EditorGUILayout.LabelField(info.name, style);
+                        EditorGUILayout.SelectableLabel(info.reference.ToString(), style);
                     }
                 }
+
             };
 
             // Draw menu
@@ -133,50 +148,34 @@ namespace QuickUnity
                 draw_row(null);
             }
 
-            // Draw contents
-            Dictionary<string, AssetBundleInfo> bundleDict = null;
-            Dictionary<string, AssetInfo> assetDict = null;
-            AssetManager.GetRuntimeInfo(out bundleDict, out assetDict);
 
-            using(QuickEditor.BeginScrollView(ref scrollPos))
+            // Draw contents
+            var table = AssetManager.GetAssetTable();
+            if (table == null ) return;
+            searchText = EditorGUILayout.TextField("", searchText, "SearchTextField");
+            using (QuickEditor.BeginScrollView(ref scrollPos))
             {
-                Dictionary<string, AssetBundleInfo>.Enumerator e = bundleDict.GetEnumerator();
+                Dictionary<string, AssetBundleInfo>.Enumerator e = table.bundleDict.GetEnumerator();
                 while (e.MoveNext())
                 {
                     AssetBundleInfo info = e.Current.Value;
-                    using(QuickEditor.BeginHorizontal("As TextArea", GUILayout.MinHeight(20f)))
+                    if (!string.IsNullOrEmpty(searchText) &&
+                        info.name.IndexOf(searchText, System.StringComparison.CurrentCultureIgnoreCase) == -1)
+                    {
+                        continue;
+                    }
+
+                    GUI.backgroundColor = info.loaded ? new Color(0.51f, 1.0f, 0.59f) : new Color(0.75f, 0.75f, 0.75f);
+                    using (QuickEditor.BeginHorizontal("As TextArea", GUILayout.MinHeight(20f)))
                     {
                         draw_row(info);
                     }
                 }
             }
-            
         }
 
-        void DrawAsset()
-        {
-            Dictionary<string, AssetBundleInfo> bundleDict = null;
-            Dictionary<string, AssetInfo> assetDict = null;
-            AssetManager.GetRuntimeInfo(out bundleDict, out assetDict);
-
-            using (QuickEditor.BeginScrollView(ref scrollPos))
-            {
-                Dictionary<string, AssetInfo>.Enumerator e = assetDict.GetEnumerator();
-                while (e.MoveNext())
-                {
-                    AssetInfo info = e.Current.Value;
-                    using (QuickEditor.BeginHorizontal())
-                    {
-                        EditorGUILayout.LabelField(info.name);
-                        EditorGUILayout.LabelField("loaded");
-                    }
-                }
-            }
-        }
-
-        protected Vector2 scrollPos;
-
-        protected int tabIndex = 0;
+       
+        
     }
 }
 

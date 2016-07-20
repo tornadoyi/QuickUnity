@@ -11,6 +11,22 @@ namespace QuickUnity
 {
     public class AssetTable
     {
+        /// <summary>
+        /// Generate by config parse
+        /// </summary>
+        public Dictionary<string, AssetBundleInfo> bundleDict { get; private set; }
+
+        /// <summary>
+        /// Generate by analyze
+        /// </summary>
+        public Dictionary<string, AssetInfo> assetDict { get; private set; }
+
+        public AssetTable()
+        {
+            bundleDict = new Dictionary<string, AssetBundleInfo>();
+            assetDict = new Dictionary<string, AssetInfo>();
+        }
+
         public static AssetTable Merge(AssetTable t1, AssetTable t2)
         {
             AssetTable t = new AssetTable();
@@ -253,15 +269,7 @@ namespace QuickUnity
             return true;
         }
 
-        /// <summary>
-        /// Generate by json parse
-        /// </summary>
-        protected Dictionary<string, AssetBundleInfo> bundleDict = new Dictionary<string, AssetBundleInfo>();
-
-        /// <summary>
-        /// Generate by analyze
-        /// </summary>
-        protected Dictionary<string, AssetInfo> assetDict = new Dictionary<string, AssetInfo>();
+        
 
 
 

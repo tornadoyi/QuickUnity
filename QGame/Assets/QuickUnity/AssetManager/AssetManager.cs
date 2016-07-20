@@ -146,22 +146,9 @@ namespace QuickUnity
             info.keepTag = isKeep;
         }
 
-
-        public static void GetRuntimeInfo(out Dictionary<string, AssetBundleInfo> bundleDict, out Dictionary<string, AssetInfo> assetDict)
-        {
-            if(Application.isPlaying)
-            {
-                bundleDict = instance.loadedBundleDict;
-                assetDict = instance.loadedAssetDict;
-            }
-            else
-            {
-                bundleDict = new Dictionary<string, AssetBundleInfo>();
-                assetDict = new Dictionary<string, AssetInfo>();
-            }
-            
-        }
-
+#if UNITY_EDITOR
+        public static AssetTable GetAssetTable() { return instance == null ? null : instance.assetTable; }
+#endif
 
         protected override void Awake()
         {
