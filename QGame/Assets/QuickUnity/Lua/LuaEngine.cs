@@ -48,10 +48,10 @@ namespace QuickUnity
 
         public static Task Start()
         {
-            var task = new CustomTask();
-            instance.init(null, () => { task.SetSuccess(); });
-            LuaState.loaderDelegate = instance.InnerLoaderDelegate;
-            return task;
+            return new CustomTask().Start( (task)=>{
+                instance.init(null, () => { task.SetSuccess(); });
+                LuaState.loaderDelegate = instance.InnerLoaderDelegate;
+            });
         }
 
         public static void DoFile(string file)

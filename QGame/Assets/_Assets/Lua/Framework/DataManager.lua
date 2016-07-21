@@ -198,7 +198,7 @@ function DataManager.Register(cmgr, cinfo, ...)
     end
 
     local list          = {...}
-    local infoMgr       = cmgr.new()
+    local infoMgr       = cmgr()
     local data          = { _mgr = infoMgr, _cinfo = cinfo, _dbtableList = list }
     self._dataMap[mgrName] = data
 
@@ -246,7 +246,7 @@ function DataManager.Load()
                 if cinfo.CreateInfo then
                     info = cinfo.CreateInfo(tname)
                 else
-                    info = cinfo.new(tname)
+                    info = cinfo(tname)
                 end
                 info:LoadData(row)
                 local saveOK = mgr:SaveData(info)

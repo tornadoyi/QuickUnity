@@ -62,7 +62,7 @@ function list:ctor()
 end
 
 function list:copy()
-	local other = stl.list.new()
+	local other = stl.list()
 	self:foreach(function(k, v) other:push_back(v) end)
 end	
 

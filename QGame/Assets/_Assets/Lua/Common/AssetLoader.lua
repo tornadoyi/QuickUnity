@@ -45,7 +45,6 @@ function AssetLoader.LoadAssetWithRetry( behaviour, assetName )
 		if t.result then return end
 
 		-- Fiald to show error message and retry
-		--local sigal = SignalTask.new()
 
 
 	end)

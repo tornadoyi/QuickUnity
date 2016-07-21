@@ -1,75 +1,66 @@
 
-LuaTask = class("LuaTask")
+LuaTask = class("LuaTask", QuickUnity.LuaTask)
 
-function LuaTask:ctor( mb, func )
-	-- body
+function LuaTask:ctor( mb, func)
 	self.mb = mb
-	self.itask = CustomTask()
 	self.co = nil
 	self.func = func
 	self.name = ""
-	self.result = true
-	self.errorCode = ""
-end
+	print("here", mb, func)
+end	
 
 function LuaTask:Start( ... )
 	-- Check
-	if self.func == nil then GError("Invalid task function") return false end
+	if self.func == nil then GError("Can not start task, none task function") return self end
 
-	-- Async excute
-	if not self.itask.ready then GError("Task has ran") return end
-	self.itask:Start()
-	local parms = {...}
+	local parms = { ... }
+	self.__base:Start( function() self:OnStart(parms) end)
+	return self
+end	
+
+
+function LuaTask:OnStart( parms )
 	SafeLuaCoroutine.NextFrame(self.mb, function ()
-		if self:IsDone() then return end
+		if self.finish then return end
+
+		-- create coroutine
 		self.co = coroutine.create(function ( ... )
 			self.func(...)
-			--GInfo("Task %s Done !!!", self.name)
-			self.itask:Done()
-			if not self.result then GError(self.errorCode) end
+			self.__base:SetFinish()
+			if self.fail then GError(self.error) end
 		end)
+
+		-- run coroutine
 		coroutine.resume(self.co, unpack(parms))
 	end)
-	
-	return true
 end
 
-function LuaTask:Stop(  )
-	-- body
-	if self.itask.done then return end
-	--GInfo("Task %s Done", self.name)
-	self.itask:Done()
-end
-
-function LuaTask:WaitForDone() return  self.itask:WaitForDone() end
 
 function LuaTask:Yield(e)
 	-- Check
 	local co = coroutine.running()
-	if co == nil then GError("Yield can not call in main thread") return end
+	if co == nil then GError("Task can not yield, task has not start") return end
 	if self.co ~= co then GError("Yield is used in another task") return end
 	if coroutine.status(self.co) ~= "running" then GError("Invalid coroutine status") return end
 	
 	-- Wait for callback
 	if e ~= nil then 
 		SafeLuaCoroutine.StartCoroutine(self.mb, e, function ( ... )
-			-- Check task is done because of some reasons
-			if self.itask.done then return end
+			-- Check task is finish because of some reasons
+			if self.finish then return end
 
 			-- Resume
-			--GInfo("Task %s Yield end !!!!", self.name)
 			self:Resume()
 		end)
 	end
 
-	-- yield
-	--GInfo("Task %s Yied", self.name)
+	-- Lua yield
 	coroutine.yield()
 end
 
 function LuaTask:Resume()
 	-- Check coroutime
-	if self.co == nil then GError("Task coroutine is nil") return end
+	if self.co == nil then GError("Task can not resume, task has not start") return end
 
 	-- Check coroutine is suspend
 	local status = coroutine.status(self.co)
@@ -79,36 +70,11 @@ function LuaTask:Resume()
 	end	
 
 	-- Check task is done because of some reasons
-	if self.itask.done then return end
+	if self.finish then return end
 
-	-- Resume
-	--GInfo("Task %s Resume", self.name)
+	-- Resume lua coroutine
 	coroutine.resume(self.co)
 end
 
-function LuaTask:IsDone( ... ) return self.itask.done end
 
-function LuaTask:SetName(name) self.name = name or "" end
 
-function LuaTask:SetResultFailed(format, ...) 
-	self.result = false
-	self.errorCode = string.format(format, ...)
-end	
-
---[[
-	SignalTask
-]]
-
-SignalTask = class("SignalTask", LuaTask)
-
-function SignalTask:ctor( mb )
-	LuaTask.ctor(self, mb)
-end
-
-function SignalTask:Done( ... ) self.itask:Done() end
-
--- Override 
-function SignalTask:Start() GError("Signal has no start") end
-function SignalTask:Stop() GError("Signal has no Stop") end
-function SignalTask:Yield() GError("Signal has no Yield") end
-function SignalTask:Resume() GError("Signal has no Resume") end

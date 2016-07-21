@@ -13,3 +13,4 @@ print("Enter lua success")
 
 -- Start Game Manager
 local global = GameManager.Instance()
+

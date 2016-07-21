@@ -93,15 +93,9 @@ end
 --[[
 	Task Functions
 --]]
-function LuaBehaviour:CreateTask( f )
-	local task = LuaTask.new(self.__com, f)
-	return task
-end
-
 function LuaBehaviour:StartTask( f, ... ) 
-	local task = self:CreateTask(f)
-	if not task:Start(...) then return end
-	return task
+	local task = LuaTask(self, f)
+	return task:Start(...) 
 end	
 
 function LuaBehaviour:StopTask( task ) 

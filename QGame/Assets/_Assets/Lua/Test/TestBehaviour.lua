@@ -1,24 +1,31 @@
 TestBehaviour = class("TestBehaviour", LuaBehaviour)
 
 function TestBehaviour:Start( ... )
-	local x = self:GetComponent("Transform")
 	
-	local go = GameObject()
-	local com = go:AddComponent(QuickBehaviour)
+	local t = nil
+	t = self:StartTask(function ( ... )
+		print("enter task 1")
+		t:Yield(WaitForSeconds(3.0))
+		t:SetFail("only test fail")
+	end)
 
-	MyMove = class("MyMove", Action.MoveTo)
 
-	local seq = Action.Sequence()
-	local mv = MyMove(1.0, {1, 2, 3})
-	print(mv)
-	seq:Add(mv)
-	com.action:RunAction(seq)
+	local co = nil
+	co = self:StartTask(function ( ... )
+			
+		print("enter task 2")
+		co:Yield(WaitForSeconds(1.0))
+		
+		print("after 1 seconds, wait task 1 ...")
 
-	local t = CustomTask()
-	--t.xxx= 1
-	print(Vector3.up)
-	Vector3.up = Vector3(2,2,2)
-	print(Vector3.up)
+		co:Yield( t:WaitForFinish() )
 
-	
+		print("task 1 finish, result ", t.error)
+
+		co:Yield(WaitForSeconds(2.0))
+
+		print("task 2 finish")
+
+	end)
+
 end

@@ -68,6 +68,7 @@ namespace QuickUnity
             add(typeof(Task), null);
             add(typeof(CoroutineTask), null);
             add(typeof(AsyncTask), null);
+            add(typeof(CustomTask), null);
             add(typeof(WWWTask), null);
             add(typeof(WWWReadBytesTask), null);
             add(typeof(WWWReadTextTask), null);
@@ -91,7 +92,7 @@ namespace QuickUnity
             add(typeof(LuaComponent_Late_Fixed), null);
             add(typeof(LuaComponent_Update_Late_Fixed), null);
             add(typeof(SafeLuaCoroutine), null);
-            add(typeof(CustomTask), null);
+            add(typeof(LuaTask), null);
 
             // AssetManager
             add(typeof(AssetManager), null);

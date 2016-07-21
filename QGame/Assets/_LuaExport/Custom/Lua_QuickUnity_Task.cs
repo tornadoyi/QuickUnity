@@ -218,6 +218,18 @@ public class Lua_QuickUnity_Task : LuaObject {
 		}
 	}
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static public int get_enableRetry(IntPtr l) {
+		try {
+			QuickUnity.Task self=(QuickUnity.Task)checkSelf(l);
+			pushValue(l,true);
+			pushValue(l,self.enableRetry);
+			return 2;
+		}
+		catch(Exception e) {
+			return error(l,e);
+		}
+	}
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
 	static public int get_retryCount(IntPtr l) {
 		try {
 			QuickUnity.Task self=(QuickUnity.Task)checkSelf(l);
@@ -346,6 +358,7 @@ public class Lua_QuickUnity_Task : LuaObject {
 		addMember(l,"fail",get_fail,null,true);
 		addMember(l,"progress",get_progress,null,true);
 		addMember(l,"error",get_error,null,true);
+		addMember(l,"enableRetry",get_enableRetry,null,true);
 		addMember(l,"retryCount",get_retryCount,set_retryCount,true);
 		addMember(l,"curRetryCount",get_curRetryCount,null,true);
 		addMember(l,"startTime",get_startTime,null,true);

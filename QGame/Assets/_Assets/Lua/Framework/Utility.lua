@@ -1,5 +1,5 @@
 
-Utility = class_inherit_c("Utility", LuaUtility)
+Utility = class("Utility", LuaUtility)
 Util = Utility
 
 function Utility.LoadScript(path)

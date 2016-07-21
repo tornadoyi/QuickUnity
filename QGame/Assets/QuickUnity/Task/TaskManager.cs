@@ -71,6 +71,7 @@ namespace QuickUnity
         protected ErrorCode errorCode { get; set; }
         public string error { get; protected set; }
 
+        public bool enableRetry { get; private set;}
         public int retryCount { get; set; }
         public int curRetryCount { get; private set; }
 
@@ -248,7 +249,7 @@ namespace QuickUnity
             if (result == Result.None) result = Result.Success;
             endTime = Time.time;
 
-            if(curRetryCount < retryCount)
+            if(enableRetry && curRetryCount < retryCount)
             {
                 state = State.Sleep;
                 Start();

@@ -29,7 +29,7 @@ function class(classname, super)
 	local cls = nil
 	if super then
 		cls         = clone(super)
-		cls.__parent   = super.__parent
+		cls.__parent   = super
 		cls.__parents	= cls.__parent or {}
 		cls.__parents[super.__fullname] = super
 	else
@@ -42,86 +42,43 @@ function class(classname, super)
 
 	cls.subclass = function(parent)
 		if parent == nil then return end
-		return cls.supers[parent.__fullname] ~= nil
+		return cls.__parents[parent.__fullname] ~= nil
 	end
 
-	cls.new = function (...)
-		local instance = setmetatable({}, cls)
-		instance.class = cls
+	local function instantiate(parent, ...)
+		local instance = {}
+		for k,v in pairs(cls) do instance[k] = v end
+
+		if parent ~= nil then
+			setmetatable(instance, {
+				__index = parent, 
+				__newindex = function ( t, k, v )
+					if parent[k] ~= nil then 
+						parent[k] = v
+						return
+					end
+					rawset(instance, k, v)
+				end,
+				__tostring = function() return string.format("%s [instance]", classname) end})
+			instance.__base = parent
+		end
+		instance.__class = cls
 		if instance.ctor then instance:ctor(...) end
 		return instance
 	end
-	
-	cls.CreateByLuaComponent = function (component)	
-		local instance = {}
-		for k,v in pairs(cls) do instance[k] = v end
-        setmetatable(instance, {
-        	__index = component,
-        	__newindex = function ( t, k, v )
-					if component[k] ~= nil then 
-						component[k] = v
-						return
-					end
-					rawset(instance, k, v)
-				end})
 
-        instance.__base = component
-        if instance.ctor then instance:ctor() end
-        return instance
+	cls.CreateByLuaComponent = function (component)	
+        return instantiate(component)
 	end
 
 	setmetatable(cls, {
 		__index = super, 
 		__call = function ( t, ... )
-			-- body
-			local inst_super = super(...)
-			local instance = {}
-			for k,v in pairs(cls) do instance[k] = v end
-			setmetatable(instance, {
-				__index = inst_super, 
-				__newindex = function ( t, k, v )
-					if inst_super[k] ~= nil then 
-						inst_super[k] = v
-						return
-					end
-					rawset(instance, k, v)
-				end})
-			instance.__base = inst_super
-			return instance
-		end})
+			local parent = super and super(...) or nil
+			return instantiate(parent, ...)
+		end,
+		__tostring = function() return string.format("%s [class]", classname) end})
 
 	return cls
 end	
-
-
-
-function class_inherit_c( classname, super )
-	-- check
-	if type(classname) ~= "string" then print("invalid class name %s", type(classname)) return end
-	if super == nil then print("super must not be nil") return end
-
-	-- body
-	local cls = {__fullname = classname}
-	local smt = getmetatable(super)
-	setmetatable(cls, {
-		__index = super, 
-		__call = function ( t, ... )
-			-- body
-			local inst_super = super(...)
-			local instance = {}
-			for k,v in pairs(cls) do instance[k] = v end
-			setmetatable(instance, {
-				__index = inst_super, 
-				__newindex = function ( t, k, v )
-					-- body
-					if inst_super[k] ~= nil then 
-						inst_super[k] = v
-						return
-					end
-					rawset(instance, k, v)
-				end})
-			return instance
-		end})
-	return cls
-end
 
