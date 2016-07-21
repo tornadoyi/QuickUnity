@@ -25,10 +25,10 @@ function LuaBehaviour.FindLuaBehaviour(gameObject, class)
 		local behaviour = com.luaClassObject
 		if behaviour ~= nil then
 			-- Check same name
-			if behaviour.__cname == cls.__cname then return behaviour end
+			if behaviour.__fullname == cls.__fullname then return behaviour end
 			
 			-- Check inherit
-			if behaviour.isSubclass(cls) then return behaviour end
+			if behaviour.subclass(cls) then return behaviour end
 		end
 	end
 end
@@ -58,7 +58,7 @@ function LuaBehaviour.AddToGameObject(gameObject, class, parms)
 	local com = gameObject:AddComponent(comType)
 
 	-- Connect to lua
-	com:ConnectLuaClass(class.__cname)
+	com:ConnectLuaClass(class.__fullname)
 	local behaviour = com.luaClassObject
 	
 	-- Set parms
@@ -111,7 +111,7 @@ end
 
 
 
-
+--[[
 -- C# -- Component
 function LuaBehaviour:GetComponent( ... ) return self.__com:GetComponent(...) end
 function LuaBehaviour:GetComponentInChildren( ... ) return self.__com:GetComponentInChildren(...) end
@@ -126,3 +126,5 @@ function LuaBehaviour:GetComponentsInParent( ... ) return self.__com:GetComponen
 function LuaBehaviour:Schedule( ... ) return self.__com:Schedule(...) end
 function LuaBehaviour:ScheduleOnce( ... ) return self.__com:ScheduleOnce(...) end
 function LuaBehaviour:UnSchedule( ... ) return self.__com:UnSchedule(...) end
+
+--]]

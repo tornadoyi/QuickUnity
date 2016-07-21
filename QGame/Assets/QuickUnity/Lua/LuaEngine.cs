@@ -98,7 +98,7 @@ namespace QuickUnity
             this._luaState = luaState;
 
             IntPtr L = luaState.L;
-            LuaObject.init(L);
+            LuaObject.start(L);
 
 #if UNITY_EDITOR
             if (!UnityEditor.EditorApplication.isPlaying)

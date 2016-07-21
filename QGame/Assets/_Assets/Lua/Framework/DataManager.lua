@@ -182,8 +182,8 @@ end
 function DataManager.Register(cmgr, cinfo, ...)
 	local self = DataManager
     -- parameter check
-	local mgrName = cmgr.__cname
-	local infoName = cinfo.__cname
+	local mgrName = cmgr.__fullname
+	local infoName = cinfo.__fullname
     if not mgrName or not cmgr or not cinfo then
         GError("parameters check error")
         if dbtable then

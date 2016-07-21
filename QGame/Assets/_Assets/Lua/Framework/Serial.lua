@@ -9,7 +9,7 @@ end
 function Serial:__tostring() return string.format("%s_%s", self.high, self.low) end
 
 function Serial:__eq(other)
-	if other == nil or other.__cname ~= "Serial" then
+	if other == nil or other.__fullname ~= "Serial" then
 		GError("Invalid arguments")
 		return false
 	end	
@@ -17,7 +17,7 @@ function Serial:__eq(other)
 end
 
 function Serial:__lt(other)
-	if other == nil or other.__cname ~= "Serial" then
+	if other == nil or other.__fullname ~= "Serial" then
 		GError("Invalid arguments")
 		return false
 	end	
@@ -28,7 +28,7 @@ function Serial:__lt(other)
 end
 
 function Serial:__le(other)
-	if other == nil or other.__cname ~= "Serial" then
+	if other == nil or other.__fullname ~= "Serial" then
 		GError("Invalid arguments")
 		return false
 	end	

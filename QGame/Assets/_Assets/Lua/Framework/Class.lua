@@ -29,20 +29,20 @@ function class(classname, super)
 	local cls = nil
 	if super then
 		cls         = clone(super)
-		cls.super   = super
-		cls.supers	= cls.supers or {}
-		cls.supers[super.__cname] = super
+		cls.__parent   = super.__parent
+		cls.__parents	= cls.__parent or {}
+		cls.__parents[super.__fullname] = super
 	else
 		cls = {}
 	end
 	
 	-- set cls
-	cls.__cname = classname
-	cls.__index = cls
+	cls.__fullname = classname
+	--cls.__index = cls
 
-	cls.isSubclass = function(parent)
+	cls.subclass = function(parent)
 		if parent == nil then return end
-		return cls.supers[parent.__cname] ~= nil
+		return cls.supers[parent.__fullname] ~= nil
 	end
 
 	cls.new = function (...)
@@ -55,12 +55,40 @@ function class(classname, super)
 	cls.CreateByLuaComponent = function (component)	
 		local instance = {}
 		for k,v in pairs(cls) do instance[k] = v end
-        setmetatable(instance, {__index = component,})
-        instance.class = cls
-        instance.__com = component
+        setmetatable(instance, {
+        	__index = component,
+        	__newindex = function ( t, k, v )
+					if component[k] ~= nil then 
+						component[k] = v
+						return
+					end
+					rawset(instance, k, v)
+				end})
+
+        instance.__base = component
         if instance.ctor then instance:ctor() end
         return instance
 	end
+
+	setmetatable(cls, {
+		__index = super, 
+		__call = function ( t, ... )
+			-- body
+			local inst_super = super(...)
+			local instance = {}
+			for k,v in pairs(cls) do instance[k] = v end
+			setmetatable(instance, {
+				__index = inst_super, 
+				__newindex = function ( t, k, v )
+					if inst_super[k] ~= nil then 
+						inst_super[k] = v
+						return
+					end
+					rawset(instance, k, v)
+				end})
+			instance.__base = inst_super
+			return instance
+		end})
 
 	return cls
 end	
@@ -73,7 +101,7 @@ function class_inherit_c( classname, super )
 	if super == nil then print("super must not be nil") return end
 
 	-- body
-	local cls = {__cname = classname}
+	local cls = {__fullname = classname}
 	local smt = getmetatable(super)
 	setmetatable(cls, {
 		__index = super, 
