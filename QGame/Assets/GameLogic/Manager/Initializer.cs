@@ -29,6 +29,7 @@ public class Initializer : MonoBehaviour {
 
         // Load setting
         Setting.Load();
+        QConfig.Asset.loadAssetFromAssetBundle = Setting.loadAssetFromAssetBundle;
 
         QConfig.Asset.useVersionAsFileName = false;
 

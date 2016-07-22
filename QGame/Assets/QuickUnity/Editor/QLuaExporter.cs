@@ -101,13 +101,16 @@ namespace QuickUnity
             add(typeof(AssetManager.LoadAssetTask), null);
             add(typeof(AssetUnloadLevel), null);
 
-
+            // Asset task
             add(typeof(AssetManager.LoadSpecifyAssetTask), null);
+            add(typeof(AssetManager.LoadAudioClipTask), null);
             add(typeof(AssetManager.LoadFontTask), null);
             add(typeof(AssetManager.LoadSpriteTask), null);
             add(typeof(AssetManager.LoadTextureTask), null);
             add(typeof(AssetManager.LoadTextTask), null);
             add(typeof(AssetManager.LoadBinaryTask), null);
+            add(typeof(AssetManager.LoadGameObjectTask), null);
+            
 
             // HttpManager
             add(typeof(HttpManager), null);

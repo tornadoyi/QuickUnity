@@ -25,6 +25,7 @@ namespace SLua
             if(ld.d!=null)
             {
                 ua = (System.Predicate<System.Int32>)ld.d;
+                LuaDLL.lua_pop(l,1);    // [FIX] +gusir, if not pop, the count of params Type[] will be error 
                 return op;
             }
 			LuaDLL.lua_pop(l,1);
@@ -34,7 +35,7 @@ namespace SLua
             {
                 int error = pushTry(l);
 
-				pushValue(l,a1);
+				pushValue(ld.L,a1);
 				ld.pcall(1, error);
 				bool ret;
 				checkType(l,error+1,out ret);

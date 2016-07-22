@@ -25,6 +25,7 @@ namespace SLua
             if(ld.d!=null)
             {
                 ua = (UnityEngine.Application.LogCallback)ld.d;
+                LuaDLL.lua_pop(l,1);    // [FIX] +gusir, if not pop, the count of params Type[] will be error 
                 return op;
             }
 			LuaDLL.lua_pop(l,1);
@@ -34,9 +35,9 @@ namespace SLua
             {
                 int error = pushTry(l);
 
-				pushValue(l,a1);
-				pushValue(l,a2);
-				pushValue(l,a3);
+				pushValue(ld.L,a1);
+				pushValue(ld.L,a2);
+				pushValue(ld.L,a3);
 				ld.pcall(3, error);
 				LuaDLL.lua_settop(l, error-1);
 			};

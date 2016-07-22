@@ -79,7 +79,19 @@ public class Setting : Singleton<Setting>
         get
         {
 #if UNITY_EDITOR
-            return assetBundleLevel == AssetBundleLevel.All;
+            return ((int)assetBundleLevel & (int)AssetBundleLevel.Lua) > 0;
+#else
+            return true;
+#endif
+        }
+    }
+
+    public static bool loadAssetFromAssetBundle
+    {
+        get
+        {
+#if UNITY_EDITOR
+            return ((int)assetBundleLevel & (int)AssetBundleLevel.Asset) > 0;
 #else
             return true;
 #endif

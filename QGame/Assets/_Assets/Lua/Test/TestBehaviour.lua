@@ -1,20 +1,39 @@
 TestBehaviour = class("TestBehaviour", LuaBehaviour)
 
-function TestBehaviour:ctor( ... )
-	self.loading = false
-	self.caches = {}
-end
 
 function TestBehaviour:Start( ... )
-	
+	local function CreatePage( ... )
+		print("create page")
+		AssetManager.LoadGameObjectAsync("Assets/_Assets/Pages/TestPage.prefab"):Finish(function ( t )
+			if t.fail then
+				print(t.error)
+				CreatePage()
+				return
+			end	
+
+			local canvas = GameObject.Find("Canvas").transform
+			local page = Util.Instantiate(t.gameObject, GameObject)
+			page.transform:SetParent(canvas, false)
+		end)
+	end
+	CreatePage()
 end
 
-function TestBehaviour:Show( ... )
+
+TestPage = class("TestPage", LuaBehaviour)
+
+function TestPage:ctor( ... )
+	self.loading = false
+	self.caches = {}
+
+	-- Config from inspector
+	self.panel = nil
+end
+
+function TestPage:Show( ... )
 	print("Show")
 	if self.loading then return end
 	self.loading = true
-
-	local panel = GameObject.Find("Canvas/Panel").transform
 
 	local st = Vector3(-310, 330, 0)
 	local dx = 80
@@ -30,7 +49,7 @@ function TestBehaviour:Show( ... )
 			co:Yield( t:WaitForFinish() )
 			if t.success then
 				local go = GameObject(i)
-				go.transform:SetParent(panel, false)
+				go.transform:SetParent(self.panel, false)
 				go.transform.localPosition = Vector3(st.x + math.ceil(i % lc) * dx, st.y - math.ceil(i / lc) * dy, 0)
 				local image = go:AddComponent(Image)
 				image.sprite = t.sprite
@@ -43,7 +62,7 @@ function TestBehaviour:Show( ... )
 	end)
 end
 
-function TestBehaviour:Clean( ... )
+function TestPage:Clean( ... )
 	print("Clean")
 	if self.loading then return end
 	for k,v in pairs(self.caches) do
@@ -52,6 +71,6 @@ function TestBehaviour:Clean( ... )
 	self.caches = {}
 end
 
-function TestBehaviour:Restart( ... )
+function TestPage:Restart( ... )
 	print("Restart")
 end

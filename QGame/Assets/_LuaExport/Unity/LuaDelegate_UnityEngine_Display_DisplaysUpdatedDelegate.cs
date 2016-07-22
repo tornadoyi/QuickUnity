@@ -25,6 +25,7 @@ namespace SLua
             if(ld.d!=null)
             {
                 ua = (UnityEngine.Display.DisplaysUpdatedDelegate)ld.d;
+                LuaDLL.lua_pop(l,1);    // [FIX] +gusir, if not pop, the count of params Type[] will be error 
                 return op;
             }
 			LuaDLL.lua_pop(l,1);
