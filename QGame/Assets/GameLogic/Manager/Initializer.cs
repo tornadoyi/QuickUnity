@@ -4,15 +4,25 @@ using QuickUnity;
 
 public class Initializer : MonoBehaviour {
 
-	// Use this for initialization
-	void Start ()
+    bool init = false;
+
+
+    public void StartWithLocal()
     {
-        StartCoroutine(Initialize());
-	}
-	
-	IEnumerator Initialize()
+        StartCoroutine(Initialize(false));
+    }
+
+    public void StartWithDownload()
     {
-        if(!QuickManager.isInit)
+        StartCoroutine(Initialize(true));
+    }
+
+    IEnumerator Initialize(bool useServerAssetTable)
+    {
+        if (init) yield break ;
+        init = true;
+
+        if (!QuickManager.isInit)
         {
             QuickManager.Start();
         }
@@ -27,7 +37,7 @@ public class Initializer : MonoBehaviour {
 
         // Download asset config
 
-        bool useServerAssetTable = true;
+        if(useServerAssetTable)
         {
             var task = HttpManager.Download(
                 FileManager.PathCombine(Setting.cdnUrl, Setting.assetTableFileName),
@@ -72,6 +82,8 @@ public class Initializer : MonoBehaviour {
         LuaEngine.DoFile("Assets/_Assets/Lua/AppDelegate");
 
         LuaLoaderHelper.PopLuaLoader();
+
+        UnityEngine.SceneManagement.SceneManager.LoadSceneAsync("Show");
 
         yield return null;
     }

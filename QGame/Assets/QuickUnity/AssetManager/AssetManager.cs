@@ -278,7 +278,7 @@ namespace QuickUnity
 
             public LoadAssetTask(string name)
             {
-                name = string.IsNullOrEmpty(name) ? string.Empty : name;
+                this.name = string.IsNullOrEmpty(name) ? string.Empty : name;
             }
 
             protected override IEnumerator OnProcess()

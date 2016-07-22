@@ -6,7 +6,6 @@ function LuaTask:ctor( mb, func)
 	self.co = nil
 	self.func = func
 	self.name = ""
-	print("here", mb, func)
 end	
 
 function LuaTask:Start( ... )

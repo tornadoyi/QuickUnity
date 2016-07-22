@@ -132,6 +132,11 @@ namespace QuickUnity
 
         public AssetInfo GetAssetInfo(string name)
         {
+            if(string.IsNullOrEmpty(name))
+            {
+                Debug.LogError("Get asset info fail, name is null");
+                return null;
+            }
             AssetInfo info = null;
             assetDict.TryGetValue(name, out info);
             return info;
