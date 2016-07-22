@@ -1,33 +1,108 @@
 ManifestFileVersion: 0
-CRC: 2333402339
+CRC: 21482457
 AssetBundleManifest:
   AssetBundleInfos:
     Info_0:
-      Name: background/9_1.unity3d
-      Dependencies: {}
-    Info_1:
-      Name: background/4_1.unity3d
-      Dependencies: {}
-    Info_2:
-      Name: sprites/test.unity3d
-      Dependencies: {}
-    Info_3:
       Name: atlases/main.unity3d
       Dependencies: {}
+    Info_1:
+      Name: lua.unity3d
+      Dependencies: {}
+    Info_2:
+      Name: icons/29.unity3d
+      Dependencies: {}
+    Info_3:
+      Name: icons/28.unity3d
+      Dependencies: {}
     Info_4:
-      Name: background/12_3.unity3d
+      Name: icons/4.unity3d
       Dependencies: {}
     Info_5:
-      Name: sprites/home.unity3d
+      Name: icons/23.unity3d
       Dependencies: {}
     Info_6:
-      Name: sprites/menu.unity3d
+      Name: icons/26.unity3d
       Dependencies: {}
     Info_7:
-      Name: pages/test.unity3d
-      Dependencies:
-        Dependency_0: background/4_1.unity3d
-        Dependency_1: atlases/main.unity3d
+      Name: icons/3.unity3d
+      Dependencies: {}
     Info_8:
-      Name: lua.unity3d
+      Name: icons/12.unity3d
+      Dependencies: {}
+    Info_9:
+      Name: icons/16.unity3d
+      Dependencies: {}
+    Info_10:
+      Name: icons/2.unity3d
+      Dependencies: {}
+    Info_11:
+      Name: icons/10.unity3d
+      Dependencies: {}
+    Info_12:
+      Name: icons/13.unity3d
+      Dependencies: {}
+    Info_13:
+      Name: icons/24.unity3d
+      Dependencies: {}
+    Info_14:
+      Name: icons/27.unity3d
+      Dependencies: {}
+    Info_15:
+      Name: icons/9.unity3d
+      Dependencies: {}
+    Info_16:
+      Name: icons/1.unity3d
+      Dependencies: {}
+    Info_17:
+      Name: icons/15.unity3d
+      Dependencies: {}
+    Info_18:
+      Name: icons/14.unity3d
+      Dependencies: {}
+    Info_19:
+      Name: icons/8.unity3d
+      Dependencies: {}
+    Info_20:
+      Name: icons/22.unity3d
+      Dependencies: {}
+    Info_21:
+      Name: icons/5.unity3d
+      Dependencies: {}
+    Info_22:
+      Name: icons/19.unity3d
+      Dependencies: {}
+    Info_23:
+      Name: icons/25.unity3d
+      Dependencies: {}
+    Info_24:
+      Name: icons/30.unity3d
+      Dependencies: {}
+    Info_25:
+      Name: icons/21.unity3d
+      Dependencies: {}
+    Info_26:
+      Name: icons/17.unity3d
+      Dependencies: {}
+    Info_27:
+      Name: icons/7.unity3d
+      Dependencies: {}
+    Info_28:
+      Name: icons/20.unity3d
+      Dependencies: {}
+    Info_29:
+      Name: icons/11.unity3d
+      Dependencies: {}
+    Info_30:
+      Name: icons/18.unity3d
+      Dependencies: {}
+    Info_31:
+      Name: icons/6.unity3d
+      Dependencies: {}
+    Info_32:
+      Name: pages/testpage.unity3d
+      Dependencies:
+        Dependency_0: atlases/main.unity3d
+        Dependency_1: font/msyhbd.unity3d
+    Info_33:
+      Name: font/msyhbd.unity3d
       Dependencies: {}

@@ -12,7 +12,7 @@ app_version: v0.1
 
 
 # 0: None 1: Asset  2: Lua 3: All
-asset_bundle_level: 0
+asset_bundle_level: 3
 
 
 defualt_language: ChineseSimplified

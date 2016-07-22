@@ -38,16 +38,23 @@ public class Initializer : MonoBehaviour {
 
         // Download asset config
 
-        if(useServerAssetTable)
+        do
         {
             var task = HttpManager.Download(
                 FileManager.PathCombine(Setting.cdnUrl, Setting.assetTableFileName),
                 FileManager.PathCombine(Setting.downloadCachePath, Setting.assetTableFileName));
             yield return task.WaitForFinish();
-            useServerAssetTable = task.success;
-            Debug.LogFormat("Download asset config {0}", task.fail ? "fail" : "success");
+            if (task.success)
+            {
+                Debug.LogFormat("Download asset config success");
+                break;
+            }
+            else
+            {
+                Debug.LogFormat("Download asset config fail, reay to retry");
+            }
         }
-        
+        while (true);
 
         // Download asset table
         {
