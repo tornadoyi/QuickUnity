@@ -12,13 +12,32 @@ namespace QuickUnity
 
         private byte[] content { get; set; }
         private int start { get; set; }
-        private int end { get; set; }
 
         public SocketBuffer(int maxCapacity)
         {
             this.maxCapacity = maxCapacity;
             start = 0;
-            end = -1;
+        }
+
+        public byte[] Read(int length)
+        {
+            var bytes = Seek(length);
+            start = (start + bytes.Length) % capacity;
+            length -= bytes.Length;
+            return bytes;
+        }
+
+        public byte[] Seek(int length)
+        {
+            int readLength = Math.Min(this.length, length);
+            var bytes = new byte[readLength];
+
+            int firstCopyLength = capacity >= start + readLength ? readLength : capacity - start;
+            int secondCopyLength = readLength - firstCopyLength;
+            Buffer.BlockCopy(content, start, bytes, 0, firstCopyLength);
+            if (secondCopyLength > 0) Buffer.BlockCopy(content, 0, bytes, firstCopyLength, secondCopyLength);
+
+            return bytes;
         }
 
         public void Write(byte[] bytes)
@@ -29,11 +48,15 @@ namespace QuickUnity
                 Realloc((int)(needLength * 1.5));
             }
 
+            int end = (start + length) % capacity;
+
             int firstCopyLength = capacity >= end + 1 + bytes.Length ? bytes.Length : capacity - end - 1;
             int secondCopyLength = bytes.Length - firstCopyLength;
 
             Buffer.BlockCopy(bytes, 0, content, end + 1, firstCopyLength);
             if(secondCopyLength > 0) Buffer.BlockCopy(bytes, 0, content, 0, secondCopyLength);
+
+            length += bytes.Length;
 
         }
 
@@ -51,10 +74,13 @@ namespace QuickUnity
 
             this.capacity = capacity;
             var newContent = new byte[capacity];
+
+            int resetCapacity = capacity - start - 1;
+            int firstCopyLength = capacity >= end + 1 + bytes.Length ? bytes.Length : capacity - end - 1;
+
             Buffer.BlockCopy(content, start, newContent, 0, end-start+1);
             content = newContent;
             start = 0;
-            end = length - 1;
 
             return true;
         }
