@@ -47,6 +47,7 @@ namespace QuickUnity
         public float sendTimeout { get; set; }
         public float receiveTimeout { get; set; }
 
+
         public string error
         {
             get { return _error; }
@@ -69,11 +70,21 @@ namespace QuickUnity
         private List<EventDelegate> eventList = new List<EventDelegate>();
 
 
+        // Buffers
+        protected AlignBuffer sendBuffer { get; set; }
+        protected RecycleBuffer receiveBuffer { get; set; }
+
+
         public ISocket(Protocol protocol)
         {
             this.protocol = protocol;
             this.sendTimeout = QConfig.Network.socketSendTimeout;
             this.receiveTimeout = QConfig.Network.socketReceiveTimeout;
+            this.sendBuffer = new AlignBuffer();
+            this.receiveBuffer = new RecycleBuffer();
+
+            this.sendBuffer.maxCapacity = QConfig.Network.socketBufferLength;
+            this.receiveBuffer.maxCapacity = QConfig.Network.socketBufferLength;
         }
 
         public virtual bool Connect()

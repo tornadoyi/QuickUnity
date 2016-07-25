@@ -17,6 +17,9 @@ namespace QuickUnity
             // Socket receive message timeout
             public const float socketReceiveTimeout = 10.0f;
 
+            // Max received buffer for socket
+            public const int socketBufferLength = 1024 * 1024 * 1024;
+
             // Fetch file time from server base on WWW
             public static float downloadTimeout = 15.0f;
 

@@ -58,7 +58,7 @@ namespace QuickUnity
                 return;
             }
 
-            new Thread(new ThreadStart(this.ReceiveLoopThread))
+            new Thread(new ThreadStart(this.WorkThread))
             {
                 Name = "TCP Receive",
                 IsBackground = true
@@ -66,10 +66,59 @@ namespace QuickUnity
         }
 
 
-        protected void ReceiveLoopThread()
+        protected void WorkThread()
         {
+            int length = 0;
+            var buffer = new byte[1024];
+
+            try
+            {
+                while (state == State.Connected)
+                {
+                    // Receive 
+                    length = sock.Receive(buffer, buffer.Length, SocketFlags.None);
+
+                    // Write to receive buffer
+                    if (length > 0)
+                    {
+                        lock (receiveBuffer)
+                        {
+                            receiveBuffer.Write(buffer, length);
+                        }
+
+                        // Update buffer size
+                        if (length >= buffer.Length)
+                        {
+                            buffer = new byte[(int)(buffer.Length * 1.5)];
+                        }
+
+                    }
+
+                    // Send
+                    lock (sendBuffer)
+                    {
+                        if (sendBuffer.length > 0)
+                        {
+                            length = sock.Send(sendBuffer.bytes, 0, sendBuffer.length, SocketFlags.None);
+                            if (length > 0)
+                            {
+                                sendBuffer.Remove(length);
+                            }
+                        }
+                    }
+                }
+            }
+            catch(System.Exception e)
+            {
+                error = e.ToString();
+            }
+
 
         }
+
+
+
+
 
     }
 }
