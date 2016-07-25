@@ -11,6 +11,12 @@ namespace QuickUnity
             // Max network buffer size
             public const int maxMessageSize = 1024 * 1024 * 1024;
 
+            // Socket send message timeout
+            public const float socketSendTimeout = 10.0f;
+
+            // Socket receive message timeout
+            public const float socketReceiveTimeout = 10.0f;
+
             // Fetch file time from server base on WWW
             public static float downloadTimeout = 15.0f;
 

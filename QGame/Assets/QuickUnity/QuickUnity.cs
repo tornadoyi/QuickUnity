@@ -26,6 +26,7 @@ namespace QuickUnity
             GameObject.DontDestroyOnLoad(qObject);
 
             // Managers
+            qObject.AddComponent<Logger>();
             qObject.AddComponent<QuickBehaviour>();
             qObject.AddComponent<TaskManager>();
             qObject.AddComponent<AssetManager>();
