@@ -15,18 +15,27 @@ namespace QuickUnity
 
         public static void RemoveSocket(int id) { instance.Remove(id); }
 
-        public static ISocket Findocket(int id) { return instance.Find(id); }
+        public static ISocket FindSocket(int id) { return instance.Find(id); }
 
 
-        public int Create<T>() where T : ISocket, new()
+        void Update()
+        {
+            var e = sockets.GetEnumerator();
+            while (e.MoveNext())
+            {
+                e.Current.Value.Tick();
+            }
+        }
+
+        private int Create<T>() where T : ISocket, new()
         {
             var socket = new T();
             var id = GenerateID();
             sockets.Add(id, socket);
             return id;
         }
-        
-        public void Remove(int id)
+
+        private void Remove(int id)
         {
             var socket = Find(id);
             if (socket == null) return;
@@ -34,7 +43,7 @@ namespace QuickUnity
             sockets.Remove(id);
         }
 
-        public ISocket Find(int id)
+        private ISocket Find(int id)
         {
             ISocket socket = null;
             sockets.TryGetValue(id, out socket);

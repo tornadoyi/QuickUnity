@@ -10,6 +10,11 @@ namespace QuickUnity
 
         protected byte[] bytes { get; set;}
 
+        public IBuffer()
+        {
+            bytes = new byte[0];
+        }
+
         public abstract void Clear();
     }
 
@@ -62,6 +67,7 @@ namespace QuickUnity
         public int Seek(byte[] bytes, int offset, int length)
         {
             length = Math.Min(length, this.length);
+            if (length == 0) return 0;
             Buffer.BlockCopy(this.bytes, 0, bytes, offset, length);
             return length;
         }
@@ -69,9 +75,13 @@ namespace QuickUnity
         public void Write(byte[] bytes, int offset, int length)
         {
             int sumLength = length + this.length;
+            if(sumLength > maxCapacity)
+            {
+                throw new ArgumentException(string.Format("Out of max capacity({0})", maxCapacity));
+            }
             if (sumLength > capacity)
             {
-                Realloc((int)(sumLength * 1.5));
+                Realloc(Math.Min((int)(sumLength * 1.5), maxCapacity));
             }
 
             Buffer.BlockCopy(bytes, offset, this.bytes, this.length, length);
@@ -156,6 +166,8 @@ namespace QuickUnity
         public int Seek(byte[] bytes, int offset, int length)
         {
             length = Math.Min(length, this.length);
+            if (length == 0) return 0;
+
             int firstCopyLength = start + length > capacity ? capacity - start : length;
             int secondCopyLength = length - firstCopyLength;
 
@@ -172,9 +184,13 @@ namespace QuickUnity
         public void Write(byte[] bytes, int offset, int length)
         {
             int sumLength = length + this.length;
+            if (sumLength > maxCapacity)
+            {
+                throw new ArgumentException(string.Format("Out of max capacity({0})", maxCapacity));
+            }
             if (sumLength > capacity)
             {
-                Realloc((int)(sumLength * 1.5));
+                Realloc(Math.Min((int)(sumLength * 1.5), maxCapacity));
             }
 
             int copyStart = (start + this.length) % capacity;

@@ -9,14 +9,13 @@ namespace QuickUnity
     public class TCPSocket : ISocket
     {
         public float connectTimeout { get; set; }
+        public float sendThreadSleepTime { get; set; }
 
         protected Socket sock { get; set; }
-
         protected Thread connectThread { get; set; }
-
-        protected Thread workThread { get; set; }
-
-        protected long startConnectTime { get; set; }
+        protected Thread sendThread { get; set; }
+        protected Thread receiveThread { get; set; }
+        protected DateTime startConnectTime { get; set; }
 
         public TCPSocket() : base(Protocol.TCP)
         {
@@ -32,7 +31,7 @@ namespace QuickUnity
         {
             if (!base.Connect()) return false;
             state = State.Connecting;
-            startConnectTime = DateTime.Now.ToUniversalTime().Ticks;
+            startConnectTime = DateTime.Now;
 
             // Clear receive buffer
             lock (receiveBuffer)
@@ -51,7 +50,7 @@ namespace QuickUnity
             return true;
         }
 
-        public virtual void Disconnect()
+        public override void Disconnect()
         {
             if (!connected) return;
             state = State.Disconnecting;
@@ -62,10 +61,15 @@ namespace QuickUnity
                 connectThread.Abort();
                 connectThread = null;
             }
-            if(workThread != null)
+            if (sendThread != null)
             {
-                workThread.Abort();
-                workThread = null;
+                sendThread.Abort();
+                sendThread = null;
+            }
+            if (receiveThread != null)
+            {
+                receiveThread.Abort();
+                receiveThread = null;
             }
 
             // Close socket
@@ -85,15 +89,10 @@ namespace QuickUnity
 
         protected override void OnTick()
         {
-            // Check connect timeout
-            if(state == State.Connecting)
+            switch(state)
             {
-                long now = DateTime.Now.ToUniversalTime().Ticks;
-                if((float)(now - startConnectTime) > connectTimeout)
-                {
-                    if (connectThread != null) connectThread.Abort();
-                    state = State.Disconnected;
-                }
+                case State.Connecting: CheckConnectTimeout(); break;
+                case State.Connected: TriggerSendThread(); break;
             }
         }
 
@@ -108,8 +107,6 @@ namespace QuickUnity
                 }
                 this.sock = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
                 this.sock.NoDelay = true;
-                this.sock.SendTimeout = (int)(sendTimeout * 1000.0f);
-                this.sock.ReceiveTimeout = (int)(receiveTimeout * 1000.0f);
                 this.sock.Connect(ipAddress, serverPort);
                 state = State.Connected;
                 NotifyConnectCallbacks();
@@ -122,23 +119,73 @@ namespace QuickUnity
                 return;
             }
 
-            workThread = new Thread(new ThreadStart(this.WorkThread))
+            sendThread = new Thread(new ThreadStart(this.StartSendThread))
+            {
+                Name = "TCP Send",
+                IsBackground = true
+            };
+
+            receiveThread = new Thread(new ThreadStart(this.StartReceiveThread))
             {
                 Name = "TCP Receive",
                 IsBackground = true
             };
-            workThread.Start();
+
+            sendThread.Start();
+            receiveThread.Start();
         }
 
+        protected void StartSendThread()
+        {
+            while (state == State.Connected)
+            {
+                try
+                {
+                    int sendBufferLength = 0;
+                    lock (sendBuffer)
+                    {
+                        if (sendBuffer.length > 0)
+                        {
+                            int length = sock.Send(sendBuffer.bytes, 0, sendBuffer.length, SocketFlags.None);
+                            if (length > 0)
+                            {
+                                sendBuffer.Read(length);
+                                lastSendTime = DateTime.Now;
+                            }
+                        }
+                        sendBufferLength = sendBuffer.length;
+                    }
 
-        protected void WorkThread()
+                    if (sendBufferLength > 0) continue;
+                    
+                    try
+                    {
+                        Thread.Sleep(Timeout.Infinite);
+                    }
+                    catch (ThreadInterruptedException e)
+                    {
+                        continue;
+                    }
+                }
+                catch(System.Exception e)
+                {
+                    error = e.ToString();
+                    break;
+                }
+            }
+
+            // Disconnect
+            SendEvent(delegate { Disconnect(); });
+        }
+
+        protected void StartReceiveThread()
         {
             int length = 0;
             var buffer = new byte[1024];
 
-            try
+            while (state == State.Connected)
             {
-                while (state == State.Connected)
+                try
                 {
                     // Receive 
                     length = sock.Receive(buffer, buffer.Length, SocketFlags.None);
@@ -158,24 +205,12 @@ namespace QuickUnity
                         }
 
                     }
-
-                    // Send
-                    lock (sendBuffer)
-                    {
-                        if (sendBuffer.length > 0)
-                        {
-                            length = sock.Send(sendBuffer.bytes, 0, sendBuffer.length, SocketFlags.None);
-                            if (length > 0)
-                            {
-                                sendBuffer.Read(length);
-                            }
-                        }
-                    }
                 }
-            }
-            catch(System.Exception e)
-            {
-                error = e.ToString();
+                catch (System.Exception e)
+                {
+                    error = e.ToString();
+                    break;
+                }
             }
 
             // Disconnect
@@ -183,9 +218,34 @@ namespace QuickUnity
         }
 
 
+        protected void CheckConnectTimeout()
+        {
+            if (state != State.Connecting) return;
+            var now = DateTime.Now;
+            if ((now - startConnectTime).TotalSeconds > connectTimeout)
+            {
+                if (connectThread != null) connectThread.Abort();
+                state = State.Disconnected;
+            }
+        }
 
+        protected void TriggerSendThread()
+        {
+            if (sendThread == null || !sendThread.IsAlive) return;
 
+            bool awake = true;
+            lock(sendBuffer)
+            {
+                awake = sendBuffer.length > 0;
+            }
 
+            if (!awake) return;
+            if (sendThread.ThreadState == ThreadState.WaitSleepJoin ||
+                sendThread.ThreadState == (ThreadState)36) // When sleep background = true thread, then state = 36
+            {
+                sendThread.Interrupt();
+            }
+        }
     }
 }
 

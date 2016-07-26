@@ -9,15 +9,20 @@ public class Initializer : MonoBehaviour {
 
     public void StartWithLocal()
     {
-        StartCoroutine(Initialize(false));
+        StartCoroutine(Initialize(false, "Show"));
     }
 
     public void StartWithDownload()
     {
-        StartCoroutine(Initialize(true));
+        StartCoroutine(Initialize(true, "Show"));
     }
 
-    IEnumerator Initialize(bool useServerAssetTable)
+    public void StartNetwork()
+    {
+        StartCoroutine(Initialize(false, "Network"));
+    }
+
+    IEnumerator Initialize(bool useServerAssetTable, string sceneName)
     {
         if (init) yield break ;
         init = true;
@@ -91,7 +96,7 @@ public class Initializer : MonoBehaviour {
 
         LuaLoaderHelper.PopLuaLoader();
 
-        UnityEngine.SceneManagement.SceneManager.LoadSceneAsync("Show");
+        UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(sceneName);
 
         yield return null;
     }

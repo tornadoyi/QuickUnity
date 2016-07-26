@@ -9,3 +9,5 @@ EditorBuildSettings:
     path: Assets/Scenes/Start.unity
   - enabled: 1
     path: Assets/Scenes/Show.unity
+  - enabled: 1
+    path: Assets/Scenes/Network.unity

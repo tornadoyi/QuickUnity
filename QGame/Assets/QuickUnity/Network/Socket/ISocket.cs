@@ -36,15 +36,14 @@ namespace QuickUnity
         public bool disconnecting { get { return state == State.Disconnecting; } }
 
         
-        public string url { get; protected set; }
+        public string url { get; set; }
         public string serverAddress { get; protected set; }
         public int serverPort { get; protected set; }
         public string urlProtocol { get; protected set; }
         public string urlPath { get; protected set; }
 
 
-        public float sendTimeout { get; set; }
-        public float receiveTimeout { get; set; }
+        public int receivedLength { get { lock (receiveBuffer) { return receiveBuffer.length; } } }
 
 
         public string error
@@ -61,21 +60,23 @@ namespace QuickUnity
         }
         private string _error = string.Empty;
 
-        // Events
-        private List<EventDelegate> eventList = new List<EventDelegate>();
+        
+        public DateTime lastSendTime { get; protected set; }
+        public DateTime lastReceiveTime { get; protected set; }
 
 
         // Buffers
         protected AlignBuffer sendBuffer { get; set; }
         protected RecycleBuffer receiveBuffer { get; set; }
 
+        // Events
+        private List<EventDelegate> eventList = new List<EventDelegate>();
+
 
         public ISocket(Protocol protocol)
         {
             this.protocol = protocol;
 
-            this.sendTimeout = QConfig.Network.socketSendTimeout;
-            this.receiveTimeout = QConfig.Network.socketReceiveTimeout;
             this.sendBuffer = new AlignBuffer();
             this.receiveBuffer = new RecycleBuffer();
 
@@ -124,6 +125,8 @@ namespace QuickUnity
 
             return true;
         }
+
+        public abstract void Disconnect();
 
         public virtual void Send(byte[] bytes) { Send(bytes, 0, bytes.Length); }
 
