@@ -10,6 +10,7 @@ namespace QuickUnity
 
         protected byte[] bytes { get; set;}
 
+        public abstract void Clear();
     }
 
     public class AlignBuffer : IBuffer
@@ -17,6 +18,8 @@ namespace QuickUnity
         new public byte[] bytes { get { return base.bytes;} private set { base.bytes = value;} }
 
         public int length { get; private set; }
+
+        public int availableCapacity { get { return maxCapacity - length; } }
 
         public int maxCapacity
         {
@@ -29,26 +32,50 @@ namespace QuickUnity
         }
         private int _maxCapacity = int.MaxValue;
 
-        public void Remove(int length)
+        public override void Clear()
         {
-            int expectLength = Math.Min(this.length, length);
-            Buffer.BlockCopy(bytes, expectLength, this.bytes, 0, this.length-expectLength);
-            this.length -= expectLength;
+            this.length = 0;
         }
 
-        public void Write(byte[] bytes, int offset, int writeLength)
-        {
-            if (bytes == null) return;
-            int expectLength = Math.Min(writeLength, bytes.Length - offset);
-            int needLength = expectLength + length;
+        public int Read(byte[] bytes) { return Read(bytes, 0, bytes.Length); }
 
-            if (needLength > capacity)
+        public int Read(byte[] bytes, int length) { return Read(bytes, 0, length); }
+
+        public int Read(byte[] bytes, int offset, int length)
+        {
+            length = Seek(bytes, offset, length);
+            this.length -= length;
+            return length;
+        }
+
+        public int Read(int length)
+        {
+            length = Math.Min(length, this.length);
+            this.length -= length;
+            return length;
+        }
+
+        public int Seek(byte[] bytes) { return Seek(bytes, 0, bytes.Length); }
+
+        public int Seek(byte[] bytes, int length) { return Seek(bytes, 0, length); }
+
+        public int Seek(byte[] bytes, int offset, int length)
+        {
+            length = Math.Min(length, this.length);
+            Buffer.BlockCopy(this.bytes, 0, bytes, offset, length);
+            return length;
+        }
+
+        public void Write(byte[] bytes, int offset, int length)
+        {
+            int sumLength = length + this.length;
+            if (sumLength > capacity)
             {
-                Realloc((int)(needLength * 1.5));
+                Realloc((int)(sumLength * 1.5));
             }
 
-            Buffer.BlockCopy(bytes, offset, this.bytes, length, expectLength);
-            length += expectLength;
+            Buffer.BlockCopy(bytes, offset, this.bytes, this.length, length);
+            this.length += length;
         }
 
         private bool Realloc(int newCapacity)
@@ -68,11 +95,15 @@ namespace QuickUnity
 
             return true;
         }
+
+        
     }
 
     public class RecycleBuffer : IBuffer
     {
         public int length { get; private set; }
+
+        public int availableCapacity { get { return maxCapacity - length; } }
 
         public int maxCapacity
         {
@@ -92,55 +123,68 @@ namespace QuickUnity
             start = 0;
         }
 
-        public byte[] Read(int length)
+        public override void Clear()
         {
-            var bytes = Seek(length);
-            start = (start + bytes.Length) % capacity;
-            length -= bytes.Length;
-            return bytes;
+            this.length = 0;
+            start = 0;
         }
 
-        public byte[] Seek(int length)
+        public int Read(byte[] bytes) { return Read(bytes, 0, bytes.Length); }
+
+        public int Read(byte[] bytes, int length) { return Read(bytes, 0, length); }
+
+        public int Read(byte[] bytes, int offset, int length)
         {
-            int readLength = Math.Min(this.length, length);
-            var bytes = new byte[readLength];
-
-            int firstCopyLength = start + readLength > capacity ? capacity - start : readLength;
-            int secondCopyLength = readLength - firstCopyLength;
-
-            Buffer.BlockCopy(bytes, start, bytes, 0, firstCopyLength);
-            if (secondCopyLength > 0) Buffer.BlockCopy(this.bytes, 0, bytes, firstCopyLength, secondCopyLength);
-
-            return bytes;
+            length = Seek(bytes, offset, length);
+            start = (start + length) % capacity;
+            this.length -= length;
+            return length;
         }
 
-        public void Write(byte[] bytes)
+        public int Read(int length)
         {
-            Write(bytes, bytes.Length);
+            length = Math.Min(length, this.length);
+            start = (start + length) % capacity;
+            this.length -= length;
+            return length;
         }
 
-        public void Write(byte[] bytes, int writeLength)
+        public int Seek(byte[] bytes) { return Seek(bytes, 0, bytes.Length); }
+
+        public int Seek(byte[] bytes, int length) { return Seek(bytes, 0, length); }
+
+        public int Seek(byte[] bytes, int offset, int length)
         {
-            Write(bytes, 0, writeLength);
+            length = Math.Min(length, this.length);
+            int firstCopyLength = start + length > capacity ? capacity - start : length;
+            int secondCopyLength = length - firstCopyLength;
+
+            Buffer.BlockCopy(this.bytes, start, bytes, offset, firstCopyLength);
+            if (secondCopyLength > 0) Buffer.BlockCopy(this.bytes, 0, bytes, offset+firstCopyLength, secondCopyLength);
+
+            return length;
         }
 
-        public void Write(byte[] bytes, int offset, int writeLength)
+        public void Write(byte[] bytes) { Write(bytes, bytes.Length); }
+
+        public void Write(byte[] bytes, int length) { Write(bytes, 0, length); }
+
+        public void Write(byte[] bytes, int offset, int length)
         {
-            int expectLength = Math.Min(writeLength, bytes.Length - offset);
-            int needLength = expectLength + length;
-            if(needLength > capacity)
+            int sumLength = length + this.length;
+            if (sumLength > capacity)
             {
-                Realloc((int)(needLength * 1.5));
+                Realloc((int)(sumLength * 1.5));
             }
 
-            int copyStart = (start + length) % capacity;
-            int firstCopyLength = copyStart + expectLength > capacity ? capacity - copyStart : expectLength;
-            int secondCopyLength = expectLength - firstCopyLength;
+            int copyStart = (start + this.length) % capacity;
+            int firstCopyLength = copyStart + length > capacity ? capacity - copyStart : length;
+            int secondCopyLength = length - firstCopyLength;
 
             Buffer.BlockCopy(bytes, offset, this.bytes, copyStart, firstCopyLength);
             if(secondCopyLength > 0) Buffer.BlockCopy(bytes, offset+firstCopyLength, this.bytes, 0, secondCopyLength);
 
-            length += expectLength;
+            this.length += length;
 
         }
 

@@ -6,32 +6,95 @@ using System.Threading;
 
 namespace QuickUnity
 {
-    public class TCPSocket : ISocket, IDisposable
+    public class TCPSocket : ISocket
     {
+        public float connectTimeout { get; set; }
+
         protected Socket sock { get; set; }
+
+        protected Thread connectThread { get; set; }
+
+        protected Thread workThread { get; set; }
+
+        protected long startConnectTime { get; set; }
 
         public TCPSocket() : base(Protocol.TCP)
         {
-
+            this.connectTimeout = QConfig.Network.tcpConnectTimeout;
         }
 
-        public void Dispose()
+        protected override void OnDispose()
         {
-            throw new NotImplementedException();
+            Disconnect();
         }
 
         public override bool Connect()
         {
             if (!base.Connect()) return false;
-
             state = State.Connecting;
-            new Thread(new ThreadStart(this.StartConnectThread))
+            startConnectTime = DateTime.Now.ToUniversalTime().Ticks;
+
+            // Clear receive buffer
+            lock (receiveBuffer)
+            {
+                receiveBuffer.Clear();
+            }
+
+            // Launch connect thread
+            connectThread = new Thread(new ThreadStart(this.StartConnectThread))
             {
                 Name = "TCP Connect",
                 IsBackground = true
-            }.Start();
+            };
+            connectThread.Start();
 
             return true;
+        }
+
+        public virtual void Disconnect()
+        {
+            if (!connected) return;
+            state = State.Disconnecting;
+
+            // Stop threads
+            if(connectThread != null)
+            {
+                connectThread.Abort();
+                connectThread = null;
+            }
+            if(workThread != null)
+            {
+                workThread.Abort();
+                workThread = null;
+            }
+
+            // Close socket
+            sock.Close();
+            sock = null;
+            
+
+            // Clear send buffer
+            lock(sendBuffer)
+            {
+                sendBuffer.Clear();
+            }
+
+            state = State.Disconnected;
+            NotifyDisconnectCallbacks();
+        }
+
+        protected override void OnTick()
+        {
+            // Check connect timeout
+            if(state == State.Connecting)
+            {
+                long now = DateTime.Now.ToUniversalTime().Ticks;
+                if((float)(now - startConnectTime) > connectTimeout)
+                {
+                    if (connectThread != null) connectThread.Abort();
+                    state = State.Disconnected;
+                }
+            }
         }
 
         protected void StartConnectThread()
@@ -49,20 +112,22 @@ namespace QuickUnity
                 this.sock.ReceiveTimeout = (int)(receiveTimeout * 1000.0f);
                 this.sock.Connect(ipAddress, serverPort);
                 state = State.Connected;
+                NotifyConnectCallbacks();
             }
             catch(System.Exception e)
             {
                 error = e.ToString();
-                state = State.Disconnecting;
+                state = State.Disconnected;
                 NotifyConnectCallbacks();
                 return;
             }
 
-            new Thread(new ThreadStart(this.WorkThread))
+            workThread = new Thread(new ThreadStart(this.WorkThread))
             {
                 Name = "TCP Receive",
                 IsBackground = true
-            }.Start();
+            };
+            workThread.Start();
         }
 
 
@@ -102,7 +167,7 @@ namespace QuickUnity
                             length = sock.Send(sendBuffer.bytes, 0, sendBuffer.length, SocketFlags.None);
                             if (length > 0)
                             {
-                                sendBuffer.Remove(length);
+                                sendBuffer.Read(length);
                             }
                         }
                     }
@@ -113,7 +178,8 @@ namespace QuickUnity
                 error = e.ToString();
             }
 
-
+            // Disconnect
+            SendEvent(delegate { Disconnect(); });
         }
 
 

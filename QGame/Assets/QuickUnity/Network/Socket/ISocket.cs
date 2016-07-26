@@ -3,16 +3,13 @@ using System.Collections;
 using System.Net;
 using System.Net.Sockets;
 using System.Collections.Generic;
+using System;
 
 namespace QuickUnity
 {
-    public abstract class ISocket
+    public abstract class ISocket : IDisposable
     {
-        public delegate void ConnectCallback(ISocket socket);
-        public delegate void DisconnectCallback(ISocket socket);
-        public delegate void ReceiveCallback(ISocket socket);
-        public delegate void SendCallback(ISocket socket, int sentID);
-        delegate void EventDelegate();
+        protected delegate void EventDelegate();
 
         public enum State
         {
@@ -27,6 +24,8 @@ namespace QuickUnity
             TCP = 0,
             UDP,
         }
+
+        public ISocketListener listener { get; protected set; }
 
         public Protocol protocol { get; protected set; }
 
@@ -63,10 +62,6 @@ namespace QuickUnity
         private string _error = string.Empty;
 
         // Events
-        public event ConnectCallback connectCallbacks;
-        public event DisconnectCallback disconnectCallbacks;
-        public event SendCallback sendCallbacks;
-        public event ReceiveCallback receiveCallbacks;
         private List<EventDelegate> eventList = new List<EventDelegate>();
 
 
@@ -78,6 +73,7 @@ namespace QuickUnity
         public ISocket(Protocol protocol)
         {
             this.protocol = protocol;
+
             this.sendTimeout = QConfig.Network.socketSendTimeout;
             this.receiveTimeout = QConfig.Network.socketReceiveTimeout;
             this.sendBuffer = new AlignBuffer();
@@ -85,6 +81,21 @@ namespace QuickUnity
 
             this.sendBuffer.maxCapacity = QConfig.Network.socketBufferLength;
             this.receiveBuffer.maxCapacity = QConfig.Network.socketBufferLength;
+
+            SetListener(new DefaultSocketListener());
+        }
+
+        public void Dispose()
+        {
+            OnDispose();
+        }
+
+
+        public void SetListener(ISocketListener listener)
+        {
+            if (listener == null) return;
+            listener.BindSocket(this);
+            this.listener = listener;
         }
 
         public virtual bool Connect()
@@ -113,6 +124,42 @@ namespace QuickUnity
 
             return true;
         }
+
+        public virtual void Send(byte[] bytes) { Send(bytes, 0, bytes.Length); }
+
+        public virtual void Send(byte[] bytes, int length) { Send(bytes, 0, length); }
+
+        public virtual void Send(byte[] bytes, int offset, int length)
+        {
+            lock(sendBuffer)
+            {
+                if (sendBuffer.availableCapacity < length)
+                {
+                    throw new ArgumentException(string.Format("Not enough available capacity({0})", sendBuffer.availableCapacity));
+                }
+                sendBuffer.Write(bytes, offset, length);
+            }
+        }
+
+        public virtual int Receive(byte[] bytes) { return Receive(bytes, 0, bytes.Length); }
+
+        public virtual int Receive(byte[] bytes, int length) { lock (receiveBuffer) { return Receive(bytes, 0, length); } }
+
+        public virtual int Receive(byte[] bytes, int offset, int length) { lock (receiveBuffer) { return receiveBuffer.Read(bytes, offset, length); } }
+
+        public virtual int Seek(byte[] bytes) { return Seek(bytes, 0, bytes.Length); }
+
+        public virtual int Seek(byte[] bytes, int length) { return Seek(bytes, 0, length); }
+
+        public virtual int Seek(byte[] bytes, int offset, int length) { lock (receiveBuffer) { return receiveBuffer.Seek(bytes, offset, length); } }
+
+        public void Tick()
+        {
+            OnTick();
+            DispatchEvents();
+            listener.OnTick();
+        }
+
 
         protected bool TryParseURL(string url, out string address, out ushort port, out string urlProtocol, out string urlPath)
         {
@@ -222,49 +269,22 @@ namespace QuickUnity
             }
         }
 
-        protected void NotifyConnectCallbacks()
+        protected void NotifyConnectCallbacks() { SendEvent(delegate { listener.OnConnect(); }); }
+
+        protected void NotifyDisconnectCallbacks() { SendEvent(delegate { listener.OnDisconnect(); }); }
+
+
+        protected void SendEvent(EventDelegate del)
         {
             lock (eventList)
             {
-                this.eventList.Add(delegate
-                {
-                    connectCallbacks.Invoke(this);
-                });
+                this.eventList.Add(del);
             }
         }
 
-        protected void NotifyDisconnectCallbacks()
-        {
-            lock (eventList)
-            {
-                this.eventList.Add(delegate
-                {
-                    disconnectCallbacks.Invoke(this);
-                });
-            }
-        }
+        protected virtual void OnTick() { }
 
-        protected void NotifyReceiveCallbacks()
-        {
-            lock (eventList)
-            {
-                this.eventList.Add(delegate
-                {
-                    receiveCallbacks.Invoke(this);
-                });
-            }
-        }
-
-        protected void NotifySendCallbacks(int sendID)
-        {
-            lock (eventList)
-            {
-                this.eventList.Add(delegate
-                {
-                    sendCallbacks.Invoke(this, sendID);
-                });
-            }
-        }
+        protected virtual void OnDispose() { }
     }
 }
 

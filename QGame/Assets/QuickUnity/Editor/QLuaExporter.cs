@@ -116,10 +116,10 @@ namespace QuickUnity
             add(typeof(HttpManager), null);
 
             // Network
-            add(typeof(SocketBase), null);
-            add(typeof(SocketClient), null);
-            add(typeof(SocketManager), null);
-            
+            add(typeof(ISocket), null);
+            add(typeof(TCPSocket), null);
+            add(typeof(ISocketListener), null);
+            add(typeof(SocketManager), null); 
         }
 
     }
