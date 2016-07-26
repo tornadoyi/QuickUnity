@@ -226,6 +226,8 @@ namespace QuickUnity
             {
                 if (connectThread != null) connectThread.Abort();
                 state = State.Disconnected;
+                error = "Connect timeout";
+                NotifyConnectCallbacks();
             }
         }
 
