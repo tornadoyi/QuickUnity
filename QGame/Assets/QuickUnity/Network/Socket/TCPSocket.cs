@@ -72,38 +72,42 @@ namespace QuickUnity
             this.connectEvent.Set();
             this.sendEvent.Set();
 
-            // Close socket
-            if(sock != null)
+            // Disconnect
+            sock.BeginDisconnect(false, new AsyncCallback((ar) =>
             {
+                sock.EndDisconnect(ar);
                 sock.Close();
-                sock = null;
-            }
 
-            // Wait thread finished
-            if (connectThread != null)
-            {
-                connectThread.Join();
-                connectThread = null;
-            }
-            if (sendThread != null)
-            {
-                sendThread.Join();
-                connectThread = null;
-            }
-            if (receiveThread != null)
-            {
-                receiveThread.Join();
-                connectThread = null;
-            }
+                // Wait thread finished
+                if (connectThread != null)
+                {
+                    connectThread.Abort();
+                    connectThread.Join();
+                    connectThread = null;
+                }
+                if (sendThread != null)
+                {
+                    sendThread.Abort();
+                    sendThread.Join();
+                    sendThread = null;
+                }
+                if (receiveThread != null)
+                {
+                    receiveThread.Abort();
+                    receiveThread.Join();
+                    receiveThread = null;
+                }
 
-            // Clear send buffer
-            lock (sendBuffer)
-            {
-                sendBuffer.Clear();
-            }
+                // Clear send buffer
+                lock (sendBuffer)
+                {
+                    sendBuffer.Clear();
+                }
 
-            state = State.Disconnected;
-            if(sendEvent) NotifyDisconnectCallbacks();
+                state = State.Disconnected;
+                if (sendEvent) NotifyDisconnectCallbacks();
+
+            }), this.sock); 
         }
 
         protected override void OnTick()
@@ -245,8 +249,9 @@ namespace QuickUnity
                 try
                 {
                     // Receive 
+                    int pollTimeout = (int)(QConfig.Network.socketPollTimeout * 1000 * 1000);
                     length = 0;
-                    if(sock.Poll(-1, SelectMode.SelectRead))
+                    if(sock.Poll(pollTimeout, SelectMode.SelectRead))
                     {
                         length = this.sock.Receive(buffer, 0, buffer.Length, SocketFlags.None);
 

@@ -11,11 +11,15 @@ namespace QuickUnity
             // Max network buffer size
             public const int maxMessageSize = 1024 * 1024 * 1024;
 
+            // Max received buffer for socket
+            public const int socketBufferLength = 1024 * 1024 * 1024;
+
+            // Poll timeout use received check, and effect on disconnect time
+            public const float socketPollTimeout = 0.016f;
+
             // TCP connect timeout
             public const float tcpConnectTimeout = 10.0f;
 
-            // Max received buffer for socket
-            public const int socketBufferLength = 1024 * 1024 * 1024;
 
             // Fetch file time from server base on WWW
             public static float downloadTimeout = 15.0f;
