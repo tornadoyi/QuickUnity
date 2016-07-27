@@ -46,19 +46,7 @@ namespace QuickUnity
         public int receivedLength { get { lock (receiveBuffer) { return receiveBuffer.length; } } }
 
 
-        public string error
-        {
-            get { return _error; }
-            set
-            {
-                lock(_error)
-                {
-                    _error = value;
-                    Logger.LogError(_error);
-                }
-            }
-        }
-        private string _error = string.Empty;
+        public Error error { get; protected set; }
 
         
         public DateTime lastSendTime { get; protected set; }
@@ -103,7 +91,7 @@ namespace QuickUnity
         {
             if (!disconnected)
             {
-                error = string.Format("Connect failed, Current state is {0}", state);
+                error = new Error(ErrorCode.SOCKET_INVALID_STATE, "Connect failed, Current state is {0}", state);
                 return false;
             }
             if (string.IsNullOrEmpty(this.serverAddress))
@@ -114,7 +102,7 @@ namespace QuickUnity
                 string urlPath = string.Empty;
                 if(!TryParseURL(url, out serverAddress, out serverPort, out urlProtocol, out urlPath))
                 {
-                    _error = string.Format("Connect failed, Parse url:{0} failed", url);
+                    error = new Error(ErrorCode.SOCKET_URL_PASE_ERROR, "Connect failed, Parse url:{0} failed", url);
                     return false;
                 }
                 this.serverAddress = serverAddress;
@@ -262,13 +250,15 @@ namespace QuickUnity
 
         protected void DispatchEvents()
         {
+            EventDelegate[] delegates = null;
             lock (eventList)
             {
-                for(int i=0; i< eventList.Count; ++i)
-                {
-                    eventList[i].Invoke();
-                }
+                delegates = eventList.ToArray();
                 eventList.Clear();
+            }
+            for (int i = 0; i < delegates.Length; ++i)
+            {
+                delegates[i].Invoke();
             }
         }
 

@@ -3,6 +3,7 @@
 ## ------------------------------------
 
 login_server_url : tcp://10.130.149.14:6666
+#login_server_url : tcp://10.130.149.140:6666
 
 cdn_url: http://210.242.242.69:8089
 #cdn_url: http://dev46.happyelements.net:8011/TestCDN

@@ -43,7 +43,7 @@ public class GameSocketListener :  ISocketListener
         msgLength = IPAddress.NetworkToHostOrder(msgLength); ;
 
         // No message body
-        if (headerCache.Length + msgLength < socket.receivedLength) return;
+        if (headerCache.Length + msgLength > socket.receivedLength) return;
 
         // Read header and body
         var bytes = new byte[msgLength];

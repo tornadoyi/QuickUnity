@@ -382,20 +382,6 @@ public class Lua_QuickUnity_ISocket : LuaObject {
 		}
 	}
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static public int set_error(IntPtr l) {
-		try {
-			QuickUnity.ISocket self=(QuickUnity.ISocket)checkSelf(l);
-			string v;
-			checkType(l,2,out v);
-			self.error=v;
-			pushValue(l,true);
-			return 1;
-		}
-		catch(Exception e) {
-			return error(l,e);
-		}
-	}
-	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
 	static public int get_lastSendTime(IntPtr l) {
 		try {
 			QuickUnity.ISocket self=(QuickUnity.ISocket)checkSelf(l);
@@ -442,7 +428,7 @@ public class Lua_QuickUnity_ISocket : LuaObject {
 		addMember(l,"urlProtocol",get_urlProtocol,null,true);
 		addMember(l,"urlPath",get_urlPath,null,true);
 		addMember(l,"receivedLength",get_receivedLength,null,true);
-		addMember(l,"error",get_error,set_error,true);
+		addMember(l,"error",get_error,null,true);
 		addMember(l,"lastSendTime",get_lastSendTime,null,true);
 		addMember(l,"lastReceiveTime",get_lastReceiveTime,null,true);
 		createTypeMetatable(l,null, typeof(QuickUnity.ISocket));
