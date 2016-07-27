@@ -2,11 +2,14 @@
 using System.Collections;
 using UnityEngine.UI;
 using QuickUnity;
+using System.Collections.Generic;
 
 public class TestNetwork : MonoBehaviour {
 
     public Text state;
     public Text content;
+
+    public Toggle batch;
 
     private int line;
 
@@ -26,6 +29,7 @@ public class TestNetwork : MonoBehaviour {
         listener.connectCallbacks += OnConnect;
         listener.disconnectCallbacks += OnDisconnect;
         listener.receiveCallbacks += OnReceive;
+        listener.batchReceiveCallbacks += OnBatchReceive;
     }
 
     public void Connect()
@@ -39,6 +43,21 @@ public class TestNetwork : MonoBehaviour {
     }
 
     public void Send()
+    {
+        if(batch.isOn)
+        {
+            for(int i=0; i<1000; ++i)
+            {
+                SendTo();
+            }
+        }
+        else
+        {
+            SendTo();
+        }
+    }
+
+    void SendTo()
     {
         ++sendTime;
         string str = string.Format("{0}{0}{0}{0}{0}", sendTime);
@@ -70,6 +89,11 @@ public class TestNetwork : MonoBehaviour {
     public void OnReceive(GameSocketListener listener, Message msg)
     {
         AddInfo(string.Format("Receive: {0}", msg.content));
+    }
+
+    public void OnBatchReceive(GameSocketListener listener, List<Message> msg)
+    {
+        AddInfo(string.Format("Receive: {0} msg", msg.Count));
     }
 
     void AddInfo(string str)
