@@ -168,7 +168,9 @@ namespace QuickUnity
             var map = AssetBundleBuilder.CalculateAssetBundles(
                 config.rootPath, config.ignoreFilePatterns, config.assetBundlePatterns, config.assetBundleExtension);
 
-            config.buildPath = FileManager.FormatLinuxPathSeparator(System.IO.Path.GetFullPath(config.buildPath));
+            var configDirectory = Path.GetDirectoryName(configFilePath);
+            var buildPath = System.IO.Path.GetFullPath(Path.Combine(configDirectory, config.buildPath));
+            config.buildPath = FileManager.FormatLinuxPathSeparator(buildPath);
             assetBundles = new List<AssetBundleItem>();
             foreach (var kv in map)
             {
@@ -188,6 +190,9 @@ namespace QuickUnity
             [YamlMember(Alias = "build_path")]
             public string buildPath { get; set; }
 
+            [YamlMember(Alias = "asset_table_name")]
+            public string assetTableName { get; set; }
+
             [YamlMember(Alias = "asset_bundle_ext")]
             public string assetBundleExtension { get; set; }
 
@@ -200,11 +205,15 @@ namespace QuickUnity
             [YamlMember(Alias = "ignore_file_pattern")]
             public string[] ignoreFilePatterns { get; set; }
 
+            [YamlMember(Alias = "local_asset_bundle_pattern")]
+            public string[] localAssetBundlePatterns { get; set; }
+
             [YamlMember(Alias = "build_options")]
             public string[] buildOptionDescs { get; set; }
 
             [YamlMember(Alias = "file_extension_replace")]
             public List<string[]> fileExtReplace { get; set; }
+
 
             public BuildAssetBundleOptions buildOptions
             {
@@ -244,6 +253,9 @@ namespace QuickUnity
                 [YamlMember(Alias = "dependencies")]
                 public string[] dependencies { get; set; }
 
+                [YamlMember(Alias = "local")]
+                public bool local { get; set; }
+
                 [YamlMember(Alias = "assets")]
                 public string[] assets { get; set; }
             }
@@ -262,8 +274,10 @@ namespace QuickUnity
             UpdateAssetBundleNames(config);
 
             var manifest = BuildPipeline.BuildAssetBundles(buildPath, config.buildOptions, target);
-            var content = GenerateBuildConfigFile(buildPath, manifest);
-            File.WriteAllText(Path.Combine(buildPath, "asset_table.yml"), content);
+
+            var configFilePath = Path.Combine(buildPath, config.assetTableName);
+            var content = GenerateAndMergeBuildConfig(buildPath, config.localAssetBundlePatterns, manifest, null);
+            File.WriteAllText(configFilePath, content);
 
             ProcessFileExtensions(assetList, config.fileExtReplace, false);
         }
@@ -420,13 +434,32 @@ namespace QuickUnity
             AssetDatabase.Refresh();
         }
 
-        public static string GenerateBuildConfigFile(string buildPath, AssetBundleManifest manifest)
+
+        public static BuildConfigFile LoadBuildConfigFile(string confilePath)
+        {
+            if (!File.Exists(confilePath)) return new BuildConfigFile();
+            var document = File.ReadAllText(confilePath);
+            var input = new StringReader(document);
+            var deserializer = new Deserializer(namingConvention: new CamelCaseNamingConvention());
+            var config = deserializer.Deserialize<BuildConfigFile>(input);
+            return config;
+        }
+
+        public static string GenerateAndMergeBuildConfig(string buildPath, string[] localPatterns, AssetBundleManifest manifest, BuildConfigFile preConfig)
         {
             var serializer = new YamlDotNet.Serialization.Serializer();
             var stringBuilder = new StringBuilder();
             var stringWriter = new StringWriter(stringBuilder);
-            var config = new BuildConfigFile();
-            config.assetBundles = new List<BuildConfigFile.AssetBundleItem>();
+
+            // Cache previous config
+            var assetBundleDict = new Dictionary<string, BuildConfigFile.AssetBundleItem>();
+            if(preConfig != null && preConfig.assetBundles != null)
+            {
+                foreach(var item in preConfig.assetBundles)
+                {
+                    assetBundleDict[item.name] = item;
+                }
+            }
 
             foreach (var assetBundleName in manifest.GetAllAssetBundles())
             {
@@ -440,7 +473,7 @@ namespace QuickUnity
                 var fi = new System.IO.FileInfo(assetBundlePath);
                 item.size = fi.Length;
 
-                // Varriant
+                // Variant
                 item.variant = string.Empty;
 
                 // Version
@@ -454,12 +487,22 @@ namespace QuickUnity
                 item.dependencies = manifest.GetAllDependencies(assetBundleName)
                     .Select(path => FileManager.GetFilePathWithoutExtension(path) ).ToArray();
 
+                // Local
+                item.local = false;
+                foreach (var pattern in localPatterns)
+                {
+                    if (Regex.IsMatch(item.name, pattern)) item.local = true;
+                }
+
                 // Assets
                 item.assets = AssetDatabase.GetAssetPathsFromAssetBundle(assetBundleName);
 
-                config.assetBundles.Add(item);
+                assetBundleDict[item.name] = item;
             }
 
+
+            var config = new BuildConfigFile();
+            config.assetBundles = assetBundleDict.Values.ToList();
             serializer.Serialize(stringWriter, config);
             return stringBuilder.ToString();
         }

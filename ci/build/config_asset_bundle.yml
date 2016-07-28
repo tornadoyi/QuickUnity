@@ -1,4 +1,6 @@
-build_path: ../ci/assetbunlde_build
+build_path: ../assetbunlde_build
+
+asset_table_name: asset_table.yml
 
 asset_bundle_ext: unity3d
 
@@ -20,3 +22,5 @@ ignore_file_pattern:
 file_extension_replace:
   - [lua, bytes]
   
+local_asset_bundle_pattern:
+  - ^font
