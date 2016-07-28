@@ -303,12 +303,19 @@ namespace QuickUnity
         {
             if (assetNames.Count == 0) return;
 
+            var allAssets = new List<string>();
             var buildDict = new Dictionary<string, AssetBundleBuild>();
-            System.Action<string, List<string>> CreateAssetBundleBuildAndSave = (bundleName, assets) =>
+            System.Action<string, List<string>> CreateAssetBundleBuildAndSave = (bundleName, assetList) =>
             {
+                var assets = new string[assetList.Count];
+                for(int i=0; i< assetList.Count; ++i)
+                {
+                    assets[i] = TransformFileExtension(assetList[i], config.fileExtReplace, true);
+                    allAssets.Add(assets[i]);
+                }
                 var build = new AssetBundleBuild();
                 build.assetBundleName = bundleName;
-                build.assetNames = assets.ToArray();
+                build.assetNames = assets;
                 buildDict[bundleName] = build;
             };
 
@@ -359,6 +366,9 @@ namespace QuickUnity
                 }
             }
 
+            //AssetDatabase.SaveAssets();
+            //AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate | ImportAssetOptions.ForceSynchronousImport);
+
             // Create build path
             var buildPath = FileManager.PathCombine(config.buildPath, target.ToString());
             if (!Directory.Exists(buildPath)) Directory.CreateDirectory(buildPath);
@@ -369,6 +379,8 @@ namespace QuickUnity
             var preConfig = LoadBuildConfigFile(configPath);
             var content = GenerateAndMergeBuildConfig(buildPath, config.localAssetBundlePatterns, manifest, preConfig);
             File.WriteAllText(configPath, content);
+
+            ProcessFileExtensions(allAssets, config.fileExtReplace, false);
         }
 
         public static void BuildAssetBundles(BuildTarget target, Config config)
@@ -517,28 +529,35 @@ namespace QuickUnity
             if (replace == null) return;
             for(int i=0; i< assets.Count; ++i)
             {
-                var asset = assets[i];
-                var ext = Path.GetExtension(asset).Replace(".", "");
-                int src = 0;
-                int dst = 1;
-                if(!forward)
-                {
-                    src = 1;
-                    dst = 0; 
-                }
-                foreach (var rep in replace)
-                {
-                    if (rep.Length < 2) continue;
-                    if (ext != rep[src]) continue;
-                    var newAsset = Path.ChangeExtension(asset, rep[dst]);
-                    File.Move(asset, newAsset);
-                    assets[i] = newAsset;
-                    break;
-                }
+                assets[i] = TransformFileExtension(assets[i], replace, forward);
             }
             AssetDatabase.Refresh();
         }
 
+        public static string TransformFileExtension(string asset, List<string[]> replace, bool forward = true)
+        {
+            if (replace == null) return asset;
+            var newAsset = asset;
+            var ext = Path.GetExtension(asset).Replace(".", "");
+            int src = 0;
+            int dst = 1;
+            if (!forward)
+            {
+                src = 1;
+                dst = 0;
+            }
+            foreach (var rep in replace)
+            {
+                if (rep.Length < 2) continue;
+                if (ext != rep[src]) continue;
+                newAsset = Path.ChangeExtension(asset, rep[dst]);
+                //File.Move(asset, newAsset);
+                var error = AssetDatabase.MoveAsset(asset, newAsset);
+                if (!string.IsNullOrEmpty(error)) Debug.LogError(error);
+                break;
+            }
+            return newAsset;
+        }
 
         public static BuildConfigFile LoadBuildConfigFile(string confilePath)
         {
