@@ -551,7 +551,6 @@ namespace QuickUnity
                 if (ext != rep[src]) continue;
                 newAsset = Path.ChangeExtension(asset, rep[dst]);
                 File.Move(asset, newAsset);
-                if (!string.IsNullOrEmpty(error)) Debug.LogError(error);
                 break;
             }
             return newAsset;
