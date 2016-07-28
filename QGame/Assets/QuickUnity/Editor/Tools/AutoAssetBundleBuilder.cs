@@ -22,6 +22,7 @@ namespace QuickUnity
             public string name { get; set; }
             public List<string> assets { get; set; }
             public bool foldout {get; set;}
+            public bool selected { get; set; }
     }
 
 
@@ -58,6 +59,7 @@ namespace QuickUnity
 
             EditorGUILayout.TextField("Config Path", configFilePath);
 
+
             // Update asset bundle names
             if (config != null)
             {
@@ -75,12 +77,20 @@ namespace QuickUnity
                     UpdateAssetBundleNames();
                 }
 
-                if (GUILayout.Button("Build AssetBundles"))
+                using (QuickEditor.BeginHorizontal())
                 {
-                    BuildAssetBundles();
-                }
-            }
+                    if (GUILayout.Button("Build All"))
+                    {
+                        BuildAssetBundles();
+                    }
 
+                    if (GUILayout.Button("Build Selected"))
+                    {
+                        BuildSelectedAssetBundles();
+                    }
+                }
+                    
+            }
 
             // Load config
             using (QuickEditor.BeginHorizontal())
@@ -96,7 +106,7 @@ namespace QuickUnity
 
                 if (GUILayout.Button("Reload"))
                 {
-                    if(string.IsNullOrEmpty(configFilePath) ||
+                    if (string.IsNullOrEmpty(configFilePath) ||
                         !File.Exists(configFilePath))
                     {
                         configFilePath = EditorUtility.OpenFilePanel("Select config file", Application.dataPath, "yml");
@@ -109,7 +119,8 @@ namespace QuickUnity
                         LoadConfig(configFilePath);
                 }
             }
-                
+
+
 
             // Show Asset Bundles
             DrawAssetBundles();
@@ -122,8 +133,7 @@ namespace QuickUnity
             searchText = EditorGUILayout.TextField("", searchText, "SearchTextField");
             using (QuickEditor.BeginScrollView(ref scrollPos))
             {
-                var bundleNameStyle = EditorStyles.foldout;
-                bundleNameStyle.fontStyle = FontStyle.Bold;
+
                 foreach (var item in assetBundles)
                 {
                     if (!string.IsNullOrEmpty(searchText) &&
@@ -133,7 +143,20 @@ namespace QuickUnity
                     }
                     using (var v = new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
                     {
-                        item.foldout = EditorGUILayout.Foldout(item.foldout, item.name, bundleNameStyle);
+                        //item.foldout = EditorGUILayout.Foldout(item.foldout, item.name, bundleNameStyle);
+                        using (QuickEditor.BeginHorizontal())
+                        {
+                            using (QuickEditor.BeginVertical(GUILayout.Width(20)))
+                            {
+                                item.selected = EditorGUILayout.Toggle(item.selected);
+                            }
+                            using (QuickEditor.BeginVertical(GUILayout.Width(20)))
+                            {
+                                item.foldout = EditorGUILayout.Foldout(item.foldout, item.name);
+                            }
+                            
+                        }
+                            
                         if (!item.foldout) continue;
                         foreach(var asset in item.assets)
                         {
@@ -147,6 +170,18 @@ namespace QuickUnity
         void BuildAssetBundles()
         {
             AssetBundleBuilder.BuildAssetBundles(target, config);
+        }
+
+        void BuildSelectedAssetBundles()
+        {
+            var assets = new List<string>();
+            foreach(var item in assetBundles)
+            {
+                if (!item.selected) continue;
+                assets.AddRange(item.assets);
+                item.selected = false;
+            }
+            AssetBundleBuilder.BuildAssetBundles(target, config, assets);
         }
 
         void UpdateAssetBundleNames()
@@ -264,6 +299,78 @@ namespace QuickUnity
             public List<AssetBundleItem> assetBundles { get; set; }
         }
 
+        public static void BuildAssetBundles(BuildTarget target, Config config, List<string> assetNames)
+        {
+            if (assetNames.Count == 0) return;
+
+            var buildDict = new Dictionary<string, AssetBundleBuild>();
+            System.Action<string, List<string>> CreateAssetBundleBuildAndSave = (bundleName, assets) =>
+            {
+                var build = new AssetBundleBuild();
+                build.assetBundleName = bundleName;
+                build.assetNames = assets.ToArray();
+                buildDict[bundleName] = build;
+            };
+
+            var filterExtensions = new string[]{ ".cs" };
+            System.Func<string, bool> IsIgnoreAssetFile = (file) =>
+            {
+                var ext = Path.GetExtension(file);
+                return filterExtensions.Contains(ext);
+            };
+
+            
+            // Find all asset bundles will build
+            var allBundles = AssetBundleBuilder.CalculateAssetBundles(
+                config.rootPath, config.ignoreFilePatterns, config.assetBundlePatterns, config.assetBundleExtension);
+
+            // Pick bundles and dependencies
+            foreach (var assetName in assetNames)
+            {
+                var bundleName = GenerateAssetBundleName(assetName, config.rootPath, config.assetBundlePatterns, config.assetBundleExtension);
+
+                List<string> assets = null;
+                if (string.IsNullOrEmpty(bundleName) || !allBundles.TryGetValue(bundleName, out assets))
+                {
+                    Debug.LogErrorFormat("Asset {0} has no bundle matched", assetName);
+                    return;
+                }
+                if (buildDict.ContainsKey(bundleName)) continue;
+
+                // Create asset bundle for self
+                CreateAssetBundleBuildAndSave(bundleName, assets);
+
+                // Find all depend assets
+                var dependAssets = AssetDatabase.GetDependencies(assets.ToArray());
+
+                // Create depend bundles
+                foreach (var dependAsset in dependAssets)
+                {
+                    if (IsIgnoreAssetFile(dependAsset)) continue;
+                    var dependBundleName = GenerateAssetBundleName(dependAsset, config.rootPath, config.assetBundlePatterns, config.assetBundleExtension);
+                    List<string> dependBundleAssets = null;
+                    if (string.IsNullOrEmpty(dependBundleName) || !allBundles.TryGetValue(dependBundleName, out dependBundleAssets))
+                    {
+                        Debug.LogErrorFormat("Asset {0} has no bundle matched", dependAsset);
+                        return;
+                    }
+                    if (buildDict.ContainsKey(dependBundleName)) continue;
+                    CreateAssetBundleBuildAndSave(dependBundleName, dependBundleAssets);
+                }
+            }
+
+            // Create build path
+            var buildPath = FileManager.PathCombine(config.buildPath, target.ToString());
+            if (!Directory.Exists(buildPath)) Directory.CreateDirectory(buildPath);
+
+            var buildMap = buildDict.Values.ToArray();
+            AssetBundleManifest manifest = UnityEditor.BuildPipeline.BuildAssetBundles(buildPath, buildMap, config.buildOptions, target);
+            var configPath = Path.Combine(buildPath, config.assetTableName);
+            var preConfig = LoadBuildConfigFile(configPath);
+            var content = GenerateAndMergeBuildConfig(buildPath, config.localAssetBundlePatterns, manifest, preConfig);
+            File.WriteAllText(configPath, content);
+        }
+
         public static void BuildAssetBundles(BuildTarget target, Config config)
         {
             var buildPath = FileManager.PathCombine(config.buildPath, target.ToString());
@@ -274,10 +381,8 @@ namespace QuickUnity
             UpdateAssetBundleNames(config);
 
             var manifest = BuildPipeline.BuildAssetBundles(buildPath, config.buildOptions, target);
-
-            var configFilePath = Path.Combine(buildPath, config.assetTableName);
             var content = GenerateAndMergeBuildConfig(buildPath, config.localAssetBundlePatterns, manifest, null);
-            File.WriteAllText(configFilePath, content);
+            File.WriteAllText(Path.Combine(buildPath, config.assetTableName), content);
 
             ProcessFileExtensions(assetList, config.fileExtReplace, false);
         }
