@@ -366,8 +366,7 @@ namespace QuickUnity
                 }
             }
 
-            //AssetDatabase.SaveAssets();
-            //AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate | ImportAssetOptions.ForceSynchronousImport);
+            AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate | ImportAssetOptions.ForceSynchronousImport);
 
             // Create build path
             var buildPath = FileManager.PathCombine(config.buildPath, target.ToString());
@@ -551,8 +550,7 @@ namespace QuickUnity
                 if (rep.Length < 2) continue;
                 if (ext != rep[src]) continue;
                 newAsset = Path.ChangeExtension(asset, rep[dst]);
-                //File.Move(asset, newAsset);
-                var error = AssetDatabase.MoveAsset(asset, newAsset);
+                File.Move(asset, newAsset);
                 if (!string.IsNullOrEmpty(error)) Debug.LogError(error);
                 break;
             }
