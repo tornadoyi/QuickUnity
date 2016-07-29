@@ -156,6 +156,7 @@ namespace QuickUnity
                 for (int i = 0; i < infos.Count; ++i)
                 {
                     var info = infos[i];
+                    if (!info.unused) continue;
                     info.Unload(true);
                 }
             }

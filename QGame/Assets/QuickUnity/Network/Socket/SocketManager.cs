@@ -20,9 +20,10 @@ namespace QuickUnity
 
         protected override void OnDestroy()
         {
-            for(int i=0; i< sockets.Count; ++i)
+            var e = sockets.GetEnumerator();
+            while(e.MoveNext())
             {
-                sockets[i].Dispose();
+                e.Dispose();
             }
             sockets.Clear();
             base.OnDestroy();
