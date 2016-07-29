@@ -97,6 +97,7 @@ namespace QuickUnity
                     symbolFileNames.Add(key, paths);
                 }
                 SaveSymbolFileNames();
+                Reload();
             }
         }
 

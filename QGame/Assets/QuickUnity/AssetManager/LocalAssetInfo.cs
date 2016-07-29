@@ -89,7 +89,7 @@ namespace QuickUnity
                     asset = UnityEditor.AssetDatabase.LoadAssetAtPath(assetInfo.name, typeof(UnityEngine.Object));
                     if(asset == null)
                     {
-                        SetFail(string.Format("Can not load asset {0}", assetInfo.name));
+                        SetFail(string.Format("[EDITOR] Can not load asset {0}", assetInfo.name));
                     }
                     yield break;
                 }
@@ -100,7 +100,7 @@ namespace QuickUnity
 
                 if(asset == null)
                 {
-                    SetFail(string.Format("Can not load asset {0}", assetInfo.name));
+                    SetFail(string.Format("Can not load asset {0} from Resources", assetInfo.name));
                 }
             }
         }

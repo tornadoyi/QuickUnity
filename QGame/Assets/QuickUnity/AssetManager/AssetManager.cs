@@ -7,11 +7,16 @@ using System.Text;
 
 namespace QuickUnity
 {
+    public enum AssetUnloadLevel { AssetBundles = 1, Assets = 2, All = 3, Default = 3 }
+
     public partial class AssetManager : BaseManager<AssetManager>
     {
         public static string streamingAssetsPath { get; private set; }
         public static string assetServerUrl { get; private set;}
         public static string downloadCachePath { get; private set; }
+        public static string streamingAssetsTablePath { get; private set; }
+        public static string serverTableUrl { get; private set; }
+        public static string serverTablePath { get; private set; }
 
         protected AssetTable assetTable;
         protected Dictionary<string, AssetBundleInfo> loadedBundleDict = new Dictionary<string, AssetBundleInfo>();
@@ -30,21 +35,26 @@ namespace QuickUnity
             }
         }
 
-        public static Task Start(
+        public static void Start(
             string streamingAssetsPath, 
             string assetServerUrl, 
             string downloadCachePath,
             string streamingAssetsTablePath, 
+            string serverTableUrl,
             string serverTablePath)
         {
             AssetManager.streamingAssetsPath = streamingAssetsPath;
             AssetManager.assetServerUrl = assetServerUrl;
             AssetManager.downloadCachePath = downloadCachePath;
-
-            AssetManagerInitTask task = new AssetManagerInitTask(streamingAssetsTablePath, serverTablePath);
-            task.Start();
-            return task;
+            AssetManager.streamingAssetsTablePath = streamingAssetsTablePath;
+            AssetManager.serverTableUrl = serverTableUrl;
+            AssetManager.serverTablePath = serverTablePath;
         }
+
+        public static Task LoadLocalAssetTable() { return new LoadLocalAssetTableTask(streamingAssetsTablePath).Start(); }
+
+        public static Task LoadServerAssetTable(bool download) { return new LoadServerAssetTableTask(serverTableUrl, serverTablePath, download).Start(); }
+
 
         public static DownloadAssetBundleTask DownloadAssetBundle(string name)
         {
@@ -207,219 +217,9 @@ namespace QuickUnity
         protected static AssetInfo GetAssetInfo(string name) { return instance.assetTable.GetAssetInfo(name); }
 
         protected static AssetBundleInfo GetAssetBundleInfo(string name) { return instance.assetTable.GetBundleInfo(name); }
-
-
-
-        public class DownloadAssetBundleTask : CoroutineTask
-        {
-            public string name { get; private set;}
-
-            public DownloadAssetBundleTask(string name)
-            {
-                this.name = name;
-            }
-
-            protected override IEnumerator OnProcess()
-            {
-                if (!QConfig.Asset.loadAssetFromAssetBundle)
-                {
-                    yield break;
-                }
-
-                AssetBundleInfo info = AssetManager.instance.assetTable.GetBundleInfo(name);
-                if (info == null)
-                {
-                    SetFail(string.Format("Can not find AssetBundle {0}", name));
-                    yield break;
-                }
-
-                Task task = info.Download();
-                yield return task.WaitForFinish();
-                if (task.fail) { SetFail(task.error); }
-            }
-        }
-
-        public class LoadAssetBundleTask : CoroutineTask
-        {
-            public UnityEngine.Object asset { get; private set;}
-            public UnityEngine.Object[] subAssets { get; private set;}
-            public string name { get; private set;}
-
-            public LoadAssetBundleTask(string name)
-            {
-                this.name = name;
-            }
-
-            protected override IEnumerator OnProcess()
-            {
-                if (!QConfig.Asset.loadAssetFromAssetBundle)
-                {
-                    yield break;
-                }
-                    
-                AssetBundleInfo info = AssetManager.instance.assetTable.GetBundleInfo(name);
-                if (info == null)
-                {
-                    SetFail(string.Format("Can not find AssetBundle {0}", name));
-                    yield break;
-                }
-
-                Task task = info.LoadAsync();
-                yield return task.WaitForFinish();
-                if (task.fail) { SetFail(task.error); }
-            }
-        }
-
-        public class LoadAssetTask : CoroutineTask
-        {
-            public string name { get; private set;}
-            public UnityEngine.Object asset { get; private set; }
-            public UnityEngine.Object[] subAssets { get; private set; }
-
-            public LoadAssetTask(string name)
-            {
-                this.name = string.IsNullOrEmpty(name) ? string.Empty : name;
-            }
-
-            protected override IEnumerator OnProcess()
-            {
-
-                var info = AssetManager.GetAssetInfo(name);
-                if (info == null)
-                {
-                    info = new LocalAssetInfo(name);
-                    instance.assetTable.AddAssetInfo(info);
-                }
-
-                if (!info.loaded)
-                {
-                    var task = info.LoadAsync();
-                    yield return task.WaitForFinish();
-                    if (task.fail)
-                    {
-                        SetFail("Load asset failed", task.error);
-                        yield break;
-                    }
-                }
-                asset = info.asset;
-                subAssets = info.subAssets;
-            }
-              
-        }
-
-
-        public class AssetManagerInitTask : CoroutineTask
-        {
-            public string builtInAssetTablePath { get; private set; }
-
-            public string externalAssetTablePath { get; private set; }
-
-
-            public AssetManagerInitTask(string builtInAssetTablePath, string externalAssetTablePath)
-            {
-                this.builtInAssetTablePath = builtInAssetTablePath;
-                this.externalAssetTablePath = externalAssetTablePath;
-            }
-
-            protected override IEnumerator OnProcess()
-            {
-                if (!QConfig.Asset.loadAssetFromAssetBundle)
-                {
-                    AssetManager.instance.assetTable = new AssetTable();
-                    yield break;
-                }
-                    
-                AssetTable builtinTable = new AssetTable();
-                {
-                    Task task = builtinTable.LoadAsync(
-                        builtInAssetTablePath, 
-                        QConfig.Asset.AssetPathType.StreamingAssets);
-                    yield return task.WaitForFinish();
-                }
-
-                AssetTable externalTable = new AssetTable();
-                {
-                    Task task = externalTable.LoadAsync(
-                        externalAssetTablePath,
-                        QConfig.Asset.AssetPathType.AssetServer);
-                    yield return task.WaitForFinish();
-                }
-
-                // merge table
-                AssetTable assetTable = AssetTable.Merge(builtinTable, externalTable); 
-
-                assetTable.Analyse();
-                AssetManager.instance.assetTable = assetTable;
-            }
-                
-        }
-
-
-        public class AssetUnloadTask : CoroutineTask
-        {
-            public AssetUnloadLevel level { get; private set; }
-
-            public AssetUnloadTask(AssetUnloadLevel level)
-            {
-                this.level = level;
-            }
-
-            protected override IEnumerator OnProcess()
-            {
-                if (!QConfig.Asset.loadAssetFromAssetBundle)
-                {
-                    Resources.UnloadUnusedAssets();
-                    yield break;
-                }
-
-                if ((level & AssetUnloadLevel.AssetBundles) > 0) UnloadUnusedAssetBundles();
-                if ((level & AssetUnloadLevel.Assets) > 0) UnloadUnusedAssets();
-
-                var async = Resources.UnloadUnusedAssets();
-                yield return async;
-                System.GC.Collect();
-                
-            }
-
-            protected static void UnloadUnusedAssets()
-            {
-                if (!QConfig.Asset.loadAssetFromAssetBundle)
-                {
-                    return;
-                }
-
-                List<AssetInfo> infos = new List<AssetInfo>();
-                infos.AddRange(instance.loadedAssetDict.Values);
-                for (int i = 0; i < infos.Count; ++i)
-                {
-                    AssetInfo info = infos[i];
-                    if (!info.unused) continue;
-                    info.Unload();
-                }
-            }
-
-
-            protected static void UnloadUnusedAssetBundles()
-            {
-                if (!QConfig.Asset.loadAssetFromAssetBundle)
-                {
-                    return;
-                }
-
-                List<AssetBundleInfo> infos = new List<AssetBundleInfo>();
-                infos.AddRange(instance.loadedBundleDict.Values);
-                for (int i = 0; i < infos.Count; ++i)
-                {
-                    AssetBundleInfo info = infos[i];
-                    if (!info.unused) continue;
-                    info.Unload(true);
-                }
-            }
-
-        }
-            
+   
     }
 
-    public enum AssetUnloadLevel { AssetBundles = 1, Assets = 2, All = 3, Default = 3 }
+    
 
 }

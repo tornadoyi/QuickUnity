@@ -30,7 +30,34 @@ public class Lua_QuickUnity_AssetManager : LuaObject {
 			checkType(l,4,out a4);
 			System.String a5;
 			checkType(l,5,out a5);
-			var ret=QuickUnity.AssetManager.Start(a1,a2,a3,a4,a5);
+			System.String a6;
+			checkType(l,6,out a6);
+			QuickUnity.AssetManager.Start(a1,a2,a3,a4,a5,a6);
+			pushValue(l,true);
+			return 1;
+		}
+		catch(Exception e) {
+			return error(l,e);
+		}
+	}
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static public int LoadLocalAssetTable_s(IntPtr l) {
+		try {
+			var ret=QuickUnity.AssetManager.LoadLocalAssetTable();
+			pushValue(l,true);
+			pushValue(l,ret);
+			return 2;
+		}
+		catch(Exception e) {
+			return error(l,e);
+		}
+	}
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static public int LoadServerAssetTable_s(IntPtr l) {
+		try {
+			System.Boolean a1;
+			checkType(l,1,out a1);
+			var ret=QuickUnity.AssetManager.LoadServerAssetTable(a1);
 			pushValue(l,true);
 			pushValue(l,ret);
 			return 2;
@@ -455,6 +482,39 @@ public class Lua_QuickUnity_AssetManager : LuaObject {
 		}
 	}
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static public int get_streamingAssetsTablePath(IntPtr l) {
+		try {
+			pushValue(l,true);
+			pushValue(l,QuickUnity.AssetManager.streamingAssetsTablePath);
+			return 2;
+		}
+		catch(Exception e) {
+			return error(l,e);
+		}
+	}
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static public int get_serverTableUrl(IntPtr l) {
+		try {
+			pushValue(l,true);
+			pushValue(l,QuickUnity.AssetManager.serverTableUrl);
+			return 2;
+		}
+		catch(Exception e) {
+			return error(l,e);
+		}
+	}
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static public int get_serverTablePath(IntPtr l) {
+		try {
+			pushValue(l,true);
+			pushValue(l,QuickUnity.AssetManager.serverTablePath);
+			return 2;
+		}
+		catch(Exception e) {
+			return error(l,e);
+		}
+	}
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
 	static public int get_init(IntPtr l) {
 		try {
 			pushValue(l,true);
@@ -468,6 +528,8 @@ public class Lua_QuickUnity_AssetManager : LuaObject {
 	static public void reg(IntPtr l) {
 		getTypeTable(l,"QuickUnity.AssetManager");
 		addMember(l,Start_s);
+		addMember(l,LoadLocalAssetTable_s);
+		addMember(l,LoadServerAssetTable_s);
 		addMember(l,DownloadAssetBundle_s);
 		addMember(l,LoadAssetBundle_s);
 		addMember(l,LoadAsset_s);
@@ -495,6 +557,9 @@ public class Lua_QuickUnity_AssetManager : LuaObject {
 		addMember(l,"streamingAssetsPath",get_streamingAssetsPath,null,false);
 		addMember(l,"assetServerUrl",get_assetServerUrl,null,false);
 		addMember(l,"downloadCachePath",get_downloadCachePath,null,false);
+		addMember(l,"streamingAssetsTablePath",get_streamingAssetsTablePath,null,false);
+		addMember(l,"serverTableUrl",get_serverTableUrl,null,false);
+		addMember(l,"serverTablePath",get_serverTablePath,null,false);
 		addMember(l,"init",get_init,null,false);
 		createTypeMetatable(l,constructor, typeof(QuickUnity.AssetManager),typeof(QuickUnity.BaseManager<QuickUnity.AssetManager>));
 	}

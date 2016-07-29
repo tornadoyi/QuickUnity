@@ -1,5 +1,13 @@
 asset_bundles:
 - assets:
+  - Assets/_Assets/Atlases/Local.png
+  dependencies: []
+  md5: e6de5f726a7ebb1672378553f17b14b0
+  name: atlases/local
+  size: 66146
+  variant: ''
+  version: 1
+- assets:
   - Assets/_Assets/Font/msyhbd.otf
   dependencies: []
   md5: c787296bd00edefe9a17a2aaaeac97d0
@@ -7,3 +15,13 @@ asset_bundles:
   size: 7906178
   variant: ''
   version: 1
+- assets:
+  - Assets/_Assets/Pages/StartPage.prefab
+  dependencies:
+  - atlases/local
+  - font/msyhbd
+  md5: 490ec003556e24c1bbbbf684b2169df4
+  name: pages/startpage
+  size: 5991
+  variant: ''
+  version: 4

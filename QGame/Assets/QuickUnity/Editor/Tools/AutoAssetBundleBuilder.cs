@@ -392,8 +392,10 @@ namespace QuickUnity
             UpdateAssetBundleNames(config);
 
             var manifest = BuildPipeline.BuildAssetBundles(buildPath, config.buildOptions, target);
-            var content = GenerateAndMergeBuildConfig(buildPath, config.localAssetBundlePatterns, manifest, null);
-            File.WriteAllText(Path.Combine(buildPath, config.assetTableName), content);
+            var configPath = Path.Combine(buildPath, config.assetTableName);
+            var preConfig = LoadBuildConfigFile(configPath);
+            var content = GenerateAndMergeBuildConfig(buildPath, config.localAssetBundlePatterns, manifest, preConfig);
+            File.WriteAllText(configPath, content);
 
             ProcessFileExtensions(assetList, config.fileExtReplace, false);
         }
@@ -584,11 +586,16 @@ namespace QuickUnity
 
             foreach (var assetBundleName in manifest.GetAllAssetBundles())
             {
-                var item = new BuildConfigFile.AssetBundleItem();
+                var name = FileManager.GetFilePathWithoutExtension(assetBundleName);
                 var assetBundlePath = FileManager.PathCombine(buildPath, assetBundleName);
 
+                BuildConfigFile.AssetBundleItem oldItem = null;
+                assetBundleDict.TryGetValue(name, out oldItem);
+
+                var item = new BuildConfigFile.AssetBundleItem();
+                
                 // Name
-                item.name = FileManager.GetFilePathWithoutExtension(assetBundleName);
+                item.name = name;
 
                 // Size
                 var fi = new System.IO.FileInfo(assetBundlePath);
@@ -597,12 +604,12 @@ namespace QuickUnity
                 // Variant
                 item.variant = string.Empty;
 
-                // Version
-                item.version = 1;
-
                 // Hash
                 var bytes = FileManager.LoadBinaryFile(assetBundlePath);
                 item.md5 = Utility.MD5.Compute(bytes);
+
+                // Version
+                item.version = oldItem == null ? 1 : oldItem.md5 == item.md5 ? oldItem.version : oldItem.version + 1;
 
                 // Dependencies
                 item.dependencies = manifest.GetAllDependencies(assetBundleName)

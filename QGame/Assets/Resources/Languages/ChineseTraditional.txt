@@ -1,0 +1,2 @@
+START_ASSET_TEST = 開始資源測試
+START_NETWORK_TEST = 開始網絡測試

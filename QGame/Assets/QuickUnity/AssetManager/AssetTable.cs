@@ -31,7 +31,9 @@ namespace QuickUnity
         {
             AssetTable t = new AssetTable();
 
-            {// Copy t1 to t
+            // Copy t1 to t
+            if (t1 != null)
+            {
                 var e = t1.bundleDict.GetEnumerator();
                 while (e.MoveNext())
                 {
@@ -39,7 +41,9 @@ namespace QuickUnity
                 }
             }
 
-            {// Copy t2 to t
+            // Copy t2 to t
+            if (t2 != null)
+            {
                 var e = t2.bundleDict.GetEnumerator();
                 while (e.MoveNext())
                 {

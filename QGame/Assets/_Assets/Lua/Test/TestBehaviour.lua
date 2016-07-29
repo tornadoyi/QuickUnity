@@ -3,7 +3,7 @@ TestBehaviour = class("TestBehaviour", LuaBehaviour)
 
 function TestBehaviour:Start( ... )
 	local function CreatePage( ... )
-		print("create page")
+		print("ready create page")
 		AssetManager.LoadGameObjectAsync("Assets/_Assets/Pages/TestPage.prefab"):Finish(function ( t )
 			if t.fail then
 				print(t.error)
@@ -14,6 +14,7 @@ function TestBehaviour:Start( ... )
 			local canvas = GameObject.Find("Canvas").transform
 			local page = Util.Instantiate(t.gameObject, GameObject)
 			page.transform:SetParent(canvas, false)
+			print("create page success")
 		end)
 	end
 	CreatePage()

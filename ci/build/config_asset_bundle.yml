@@ -24,3 +24,6 @@ file_extension_replace:
   
 local_asset_bundle_pattern:
   - ^font
+  - ^pages/startpage
+  - ^pages/initpage
+  - ^atlases/local

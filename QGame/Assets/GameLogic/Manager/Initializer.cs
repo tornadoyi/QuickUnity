@@ -4,29 +4,11 @@ using QuickUnity;
 
 public class Initializer : MonoBehaviour {
 
-    bool init = false;
+    [HideInInspector]
+    public bool initFinished { get; private set; }
 
-
-    public void StartWithLocal()
+    IEnumerator Start()
     {
-        StartCoroutine(Initialize(false, "Show"));
-    }
-
-    public void StartWithDownload()
-    {
-        StartCoroutine(Initialize(true, "Show"));
-    }
-
-    public void StartNetwork()
-    {
-        StartCoroutine(Initialize(false, "Network"));
-    }
-
-    IEnumerator Initialize(bool useServerAssetTable, string sceneName)
-    {
-        if (init) yield break ;
-        init = true;
-
         if (!QuickManager.isInit)
         {
             QuickManager.Start();
@@ -35,48 +17,65 @@ public class Initializer : MonoBehaviour {
         // Load setting
         Setting.Load();
         QConfig.Asset.loadAssetFromAssetBundle = Setting.loadAssetFromAssetBundle;
-
         QConfig.Asset.useVersionAsFileName = true;
 
-        // Start lua engine
-        yield return LuaEngine.Start().WaitForFinish();
+        // Start language
+        Language.Start();
 
-        // Download asset config
-
-        do
-        {
-            var task = HttpManager.Download(
-                FileManager.PathCombine(Setting.cdnUrl, Setting.assetTableFileName),
-                FileManager.PathCombine(Setting.downloadCachePath, Setting.assetTableFileName));
-            yield return task.WaitForFinish();
-            if (task.success)
-            {
-                Debug.LogFormat("Download asset config success");
-                break;
-            }
-            else
-            {
-                Debug.LogFormat("Download asset config fail, reay to retry");
-            }
-        }
-        while (true);
-
-        // Download asset table
-        {
-            var task = AssetManager.Start(
+        // Start asset manager
+        AssetManager.Start(
                 Setting.streamingAssetsPath,
                 Setting.cdnUrl,
                 Setting.downloadCachePath,
                 FileManager.PathCombine(Setting.streamingAssetsPath, Setting.assetTableFileName),
-                !useServerAssetTable ? string.Empty : FileManager.PathCombine(Setting.downloadCachePath, Setting.assetTableFileName));
+                FileManager.PathCombine(Setting.cdnUrl, Setting.assetTableFileName),
+                FileManager.PathCombine(Setting.downloadCachePath, Setting.assetTableFileName));
+
+        yield return AssetManager.LoadLocalAssetTable().WaitForFinish();
+
+        // Init UI
+        {
+            var task = AssetManager.LoadGameObjectAsync("Assets/_Assets/Pages/StartPage.prefab");
             yield return task.WaitForFinish();
+            if(task.fail) Debug.LogError(task.error);
+            var page = GameObject.Instantiate(task.gameObject);
+            page.transform.SetParent(GameObject.Find("Canvas").transform, false);
         }
+
+        StartCoroutine(Initialize());
+    }
+
+    
+
+    IEnumerator Initialize()
+    {
+        // Start lua engine
+        yield return LuaEngine.Start().WaitForFinish();
+
+        // Download asset config
+        do
+        {
+            var task = AssetManager.LoadServerAssetTable(true);
+            yield return task.WaitForFinish();
+            if (task.success)
+            {
+                Debug.LogFormat("Load server asset table success");
+                break;
+            }
+            else
+            {
+                Debug.LogFormat("Load server asset table fail, ready to retry");
+            }
+        }
+        while (true);
+
+
 
         // Load lua
         {
             var task = AssetManager.LoadAssetBundle(Setting.luaAssetBundleName);
             yield return task.WaitForFinish();
-            if(task.success)
+            if (task.success)
             {
                 Debug.Log("Load lua success");
             }
@@ -96,8 +95,8 @@ public class Initializer : MonoBehaviour {
 
         LuaLoaderHelper.PopLuaLoader();
 
-        UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(sceneName);
+        initFinished = true;
 
-        yield return null;
     }
+
 }

@@ -33,6 +33,7 @@ def main():
 	asset_table_name = config["asset_table_name"]
 	bundle_ext = config["asset_bundle_ext"]
 
+
 	
 	def publish_to(infos, srcpath, dstpath):
 		copyfiledict = {}
