@@ -12,3 +12,5 @@ QGame/obj
 /QGame/QGame.CSharp.Plugins.csproj
 /ci/assetbunlde_build
 /ci/publish
+/ci/StreamingAssets
+/ci/build/*.pyc

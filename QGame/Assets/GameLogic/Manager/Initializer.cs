@@ -36,7 +36,7 @@ public class Initializer : MonoBehaviour {
         Setting.Load();
         QConfig.Asset.loadAssetFromAssetBundle = Setting.loadAssetFromAssetBundle;
 
-        QConfig.Asset.useVersionAsFileName = false;
+        QConfig.Asset.useVersionAsFileName = true;
 
         // Start lua engine
         yield return LuaEngine.Start().WaitForFinish();
