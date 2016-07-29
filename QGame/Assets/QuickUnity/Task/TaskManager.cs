@@ -131,7 +131,7 @@ namespace QuickUnity
             else
             {
                 if (finishCallbacks == null) finishCallbacks = new List<Callback>();
-                finishCallbacks.Add(new Callback(callback, Result.Any, ErrorCode.None));
+                finishCallbacks.Add(new Callback(callback, Result.Any, ErrorCode.Any));
             }
             return this;
         }
@@ -281,8 +281,9 @@ namespace QuickUnity
             for(int i=0; i<finishCallbacks.Count; ++i)
             {
                 var item = finishCallbacks[i];
-                if (item.result != result && (item.result & result) == 0) continue;
-                if (item.errorCode != errorCode && (item.errorCode & errorCode) == 0) continue;
+                if ((item.result & result) == 0) continue;
+                if (result == Result.Fail && (item.errorCode & errorCode) == 0) continue;
+
                 item.callback(this);
             }
             finishCallbacks.Clear();

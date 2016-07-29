@@ -7,6 +7,31 @@ namespace QuickUnity
 {
     public class HttpManager : BaseManager<HttpManager>
     {
+        protected class RequestTask
+        {
+            public RequestTask(Task task)
+            {
+                this.type = task is WWWTask ? RequestType.WWW : RequestType.HTTP;
+                this.task = task;
+            }
+
+            public RequestType type { get; private set; }
+            public Task task { get; private set; }
+
+            public enum RequestType { WWW = 0, HTTP }
+        }
+
+        protected HashSet<RequestTask> runingList = new HashSet<RequestTask>();
+        protected Queue<RequestTask> waitingList = new Queue<RequestTask>();
+
+        protected override void OnDestroy()
+        {
+            runingList.Clear();
+            waitingList.Clear();
+            base.OnDestroy();
+        }
+
+
         public static WWWReadBytesTask GetBytes(string url, float timeout)
         {
             var task = new WWWReadBytesTask(url);
@@ -131,21 +156,6 @@ namespace QuickUnity
             request.task.Start();
         }
 
-        protected HashSet<RequestTask> runingList = new HashSet<RequestTask>();
-        protected Queue<RequestTask> waitingList = new Queue<RequestTask>();
-
-        protected class RequestTask
-        {
-            public RequestTask(Task task)
-            {
-                this.type = task is WWWTask ? RequestType.WWW : RequestType.HTTP;
-                this.task = task;
-            }
-
-            public RequestType type { get; private set; }
-            public Task task { get; private set; }
-
-            public enum RequestType { WWW = 0, HTTP}
-        }
+        
     }
 }

@@ -15,13 +15,25 @@ public class Language : Singleton<Language>
         LoadLocalLanguage();
     }
 
+    public static Task SwitchLanguage(SystemLanguage language)
+    {
+        currentLanguage = language;
+        UserDefault.SetInt("game_language", (int)currentLanguage);
 
-    private static Task DownloadLanguagePackage()
+        SymbolManager.DeleteLibrary(QConfig.Symbol.textLibrary);
+        SymbolManager.CreateLibrary(QConfig.Symbol.textLibrary);
+        LoadLocalLanguage();
+
+        return DownloadLanguagePackage();
+    }
+
+    public static Task DownloadLanguagePackage()
     {
         var task = new CustomTask();
         task.Start((_) =>
         {
-            AssetManager.LoadTextAsync(string.Format("_Assets/Languages/{0}.txt", currentLanguage.ToString()))
+            Debug.Log("Start download language package");
+            AssetManager.LoadTextAsync(string.Format("Assets/_Assets/Languages/{0}.txt", currentLanguage.ToString()))
             .Finish((loadtask) =>
             {
                 if (loadtask.fail)

@@ -1,2 +1,3 @@
 START_ASSET_TEST = 开始资源测试
 START_NETWORK_TEST = 开始网络测试
+SWITCH_LANGUAGE = 切换语言

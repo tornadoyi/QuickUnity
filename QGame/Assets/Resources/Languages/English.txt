@@ -1,2 +1,3 @@
 START_ASSET_TEST = Asset Test
 START_NETWORK_TEST = Network Test
+SWITCH_LANGUAGE = Switch Language

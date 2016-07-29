@@ -43,7 +43,7 @@ namespace QuickUnity
                 // Decrease load count
                 var task = loadTask as LoadLocalAssetTask;
                 loadTask = null;
-                if (task.asset != null || task.subAssets != null)
+                if (task.asset != null || (task.subAssets != null && task.subAssets.Length > 0))
                 {
                     subAssets = task.subAssets;
                     asset = task.asset;

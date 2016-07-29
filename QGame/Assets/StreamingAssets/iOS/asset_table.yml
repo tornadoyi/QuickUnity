@@ -20,8 +20,8 @@ asset_bundles:
   dependencies:
   - atlases/local
   - font/msyhbd
-  md5: 490ec003556e24c1bbbbf684b2169df4
+  md5: 0d0bbe11a9dc2830dc628a09d60085e5
   name: pages/startpage
-  size: 5991
+  size: 6346
   variant: ''
-  version: 4
+  version: 5

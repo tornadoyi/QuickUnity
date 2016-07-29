@@ -88,15 +88,50 @@ public class Initializer : MonoBehaviour {
 
 
         LuaLoaderHelper.PushLuaLoader(Setting.luaAssetBundleName);
-
         QConfig.Asset.loadAssetFromAssetBundle = false;
         LuaEngine.enableLuaComponent = true;
         LuaEngine.DoFile("Assets/_Assets/Lua/AppDelegate");
-
         LuaLoaderHelper.PopLuaLoader();
+
+
+        do
+        {
+            var task = Language.DownloadLanguagePackage();
+            yield return task.WaitForFinish();
+            if (task.success)
+            {
+                Debug.Log("Download language package success");
+                break;
+            }
+            else
+            {
+                Debug.LogError("Download language package failed, ready to retry");
+            }
+
+        } while (true);
 
         initFinished = true;
 
     }
 
+
+    public void Restart()
+    {
+        var canvas = GameObject.Find("Canvas").transform;
+        for(int i=0; i< canvas.childCount; ++i)
+        {
+            GameObject.Destroy(canvas.GetChild(i).gameObject);
+        }
+        QuickManager.Destory();
+        GameObject.Destroy(gameObject);
+        var go = new GameObject("Initializer");
+        go.AddComponent<QuickBehaviour>().StartCoroutine(ReInit(go));
+        
+    }
+
+    private IEnumerator ReInit(GameObject go)
+    {
+        yield return new WaitForEndOfFrame();
+        go.AddComponent<Initializer>();
+    }
 }

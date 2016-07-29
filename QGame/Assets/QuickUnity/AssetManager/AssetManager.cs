@@ -135,6 +135,32 @@ namespace QuickUnity
             task.Start();
             return task;
         }
+
+        public static void UnloadAllResources()
+        {
+            // Unload all assets
+            {
+                var infos = new List<AssetInfo>();
+                infos.AddRange(instance.loadedAssetDict.Values);
+                for (int i = 0; i < infos.Count; ++i)
+                {
+                    var info = infos[i];
+                    info.Unload();
+                }
+            }
+
+            // Unload all asset bundles
+            {
+                var infos = new List<AssetBundleInfo>();
+                infos.AddRange(instance.loadedBundleDict.Values);
+                for (int i = 0; i < infos.Count; ++i)
+                {
+                    var info = infos[i];
+                    info.Unload(true);
+                }
+            }
+        }
+
             
         public static AssetBundle GetAssetBundle(string name)
         {
@@ -173,10 +199,13 @@ namespace QuickUnity
 
         protected override void OnDestroy()
         {
+            UnloadAllResources();
+
             AssetBundleInfo.bundleLoad -= OnBundleLoad;
             AssetBundleInfo.bundleUnLoad -= OnBundleUnload;
             AssetInfo.assetLoad -= OnAssetLoad;
             AssetInfo.assetUnLoad -= OnAssetUnload;
+
             base.OnDestroy();
         }
 

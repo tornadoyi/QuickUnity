@@ -18,6 +18,16 @@ namespace QuickUnity
         public static ISocket FindSocket(int id) { return instance.Find(id); }
 
 
+        protected override void OnDestroy()
+        {
+            for(int i=0; i< sockets.Count; ++i)
+            {
+                sockets[i].Dispose();
+            }
+            sockets.Clear();
+            base.OnDestroy();
+        }
+
         void Update()
         {
             var e = sockets.GetEnumerator();

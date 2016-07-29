@@ -31,6 +31,15 @@ namespace QuickUnity
         protected Stack<LuaLoaderDelegate> loaderStack = new Stack<LuaLoaderDelegate>();
 
 
+        protected override void OnDestroy()
+        {
+            _luaState.Close();
+            _luaState = null;
+            _enableLuaComponent = false;
+            loaderStack.Clear();
+            base.OnDestroy();
+        }
+
         void Update()
         {
             if (!inited)
