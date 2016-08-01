@@ -179,6 +179,17 @@ public class Lua_QuickUnity_SymbolManager : LuaObject {
 			return error(l,e);
 		}
 	}
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static public int NotifyUpdateSymbols_s(IntPtr l) {
+		try {
+			QuickUnity.SymbolManager.NotifyUpdateSymbols();
+			pushValue(l,true);
+			return 1;
+		}
+		catch(Exception e) {
+			return error(l,e);
+		}
+	}
 	static public void reg(IntPtr l) {
 		getTypeTable(l,"QuickUnity.SymbolManager");
 		addMember(l,CreateLibrary_s);
@@ -192,6 +203,7 @@ public class Lua_QuickUnity_SymbolManager : LuaObject {
 		addMember(l,Translates_s);
 		addMember(l,GetLibrary_s);
 		addMember(l,GetLibraryNames_s);
+		addMember(l,NotifyUpdateSymbols_s);
 		createTypeMetatable(l,constructor, typeof(QuickUnity.SymbolManager),typeof(QuickUnity.Singleton<QuickUnity.SymbolManager>));
 	}
 }

@@ -2,6 +2,7 @@
 using System.Collections;
 using QuickUnity;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 namespace QuickUnity
 {
@@ -125,6 +126,24 @@ namespace QuickUnity
             var array = new string[instance.libraries.Count];
             instance.libraries.Keys.CopyTo(array, 0);
             return array;
+        }
+
+        public static void NotifyUpdateSymbols()
+        {
+            for(int i=0; i< SceneManager.sceneCount; ++i)
+            {
+                var scene = SceneManager.GetSceneAt(i);
+                if (!scene.isLoaded) continue;
+                var roots = scene.GetRootGameObjects();
+                for(int j=0; j< roots.Length; ++j)
+                {
+                    var widgets = roots[j].GetComponentsInChildren<SymbolWidget>();
+                    for(int k=0; k<widgets.Length; ++k)
+                    {
+                        widgets[k].UpdateSymbol();
+                    }
+                }
+            }
         }
 
         protected static char[] separators = new char[] { '/', '.'};

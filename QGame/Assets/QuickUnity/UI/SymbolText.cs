@@ -8,6 +8,11 @@ namespace QuickUnity
     [RequireComponent(typeof(Text))]
     public class SymbolText : SymbolWidget
     {
+        public Text text;
+        public string symbolText;
+
+        protected Coroutine co_load;
+
         protected virtual void Awake()
         {
             if (text == null)
@@ -18,25 +23,25 @@ namespace QuickUnity
             SetSymbolText(symbolText);
         }
 
-        protected override string GetLibraryName() { return QConfig.Symbol.textLibrary; }
-
+        
         public void SetSymbolText(string symbolText) { SetSymbolText(libraryName, symbolText); }
 
         public void SetSymbolText(string libName, string symbolText)
         {
-            string text = SymbolManager.Translate(libName, symbolText);
-            SetText(text);
-        }
-
-
-        public void SetText(string text)
-        {
+            this.libraryName = libraryName;
+            this.symbolText = symbolText;
+            string text = SymbolManager.Translate(libraryName, symbolText);
             this.text.text = text == null ? string.Empty : text;
         }
 
-        public Text text;
-        public string symbolText;
 
-        protected Coroutine co_load;
+        protected override string GetLibraryName() { return QConfig.Symbol.textLibrary; }
+
+        protected override void OnUpdateSymbol()
+        {
+            SetSymbolText(libraryName, symbolText);
+        }
+
+        
     }
 }

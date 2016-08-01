@@ -10,7 +10,7 @@ public class SymbolTextInspector : Editor
 {
     void OnEnable()
     {
-        // Find image
+        // Find text
         var com = target as SymbolText;
         if (com.text == null) com.text = com.GetComponent<UnityEngine.UI.Text>();
 

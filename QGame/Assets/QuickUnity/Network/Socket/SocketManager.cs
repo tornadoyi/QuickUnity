@@ -23,7 +23,7 @@ namespace QuickUnity
             var e = sockets.GetEnumerator();
             while(e.MoveNext())
             {
-                e.Dispose();
+                e.Current.Value.Dispose();
             }
             sockets.Clear();
             base.OnDestroy();

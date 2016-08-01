@@ -177,6 +177,17 @@ public class Lua_QuickUnity_AssetManager : LuaObject {
 		}
 	}
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static public int UnloadAllResources_s(IntPtr l) {
+		try {
+			QuickUnity.AssetManager.UnloadAllResources();
+			pushValue(l,true);
+			return 1;
+		}
+		catch(Exception e) {
+			return error(l,e);
+		}
+	}
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
 	static public int GetAssetBundle_s(IntPtr l) {
 		try {
 			System.String a1;
@@ -537,6 +548,7 @@ public class Lua_QuickUnity_AssetManager : LuaObject {
 		addMember(l,LoadAssetAsync_s);
 		addMember(l,Instantiate_s);
 		addMember(l,UnloadUnusedResources_s);
+		addMember(l,UnloadAllResources_s);
 		addMember(l,GetAssetBundle_s);
 		addMember(l,SetAssetBundleKeepTag_s);
 		addMember(l,SetAssetKeepTag_s);

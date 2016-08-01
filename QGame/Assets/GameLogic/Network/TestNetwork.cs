@@ -32,6 +32,7 @@ public class TestNetwork : MonoBehaviour {
         listener.batchReceiveCallbacks += OnBatchReceive;
     }
 
+
     public void Connect()
     {
         socket.Connect();

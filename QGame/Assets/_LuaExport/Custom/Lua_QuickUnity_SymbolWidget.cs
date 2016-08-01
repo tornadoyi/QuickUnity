@@ -18,6 +18,18 @@ public class Lua_QuickUnity_SymbolWidget : LuaObject {
 		}
 	}
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static public int UpdateSymbol(IntPtr l) {
+		try {
+			QuickUnity.SymbolWidget self=(QuickUnity.SymbolWidget)checkSelf(l);
+			self.UpdateSymbol();
+			pushValue(l,true);
+			return 1;
+		}
+		catch(Exception e) {
+			return error(l,e);
+		}
+	}
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
 	static public int get_libraryName(IntPtr l) {
 		try {
 			QuickUnity.SymbolWidget self=(QuickUnity.SymbolWidget)checkSelf(l);
@@ -46,6 +58,7 @@ public class Lua_QuickUnity_SymbolWidget : LuaObject {
 	static public void reg(IntPtr l) {
 		getTypeTable(l,"QuickUnity.SymbolWidget");
 		addMember(l,WaitForDone);
+		addMember(l,UpdateSymbol);
 		addMember(l,"libraryName",get_libraryName,set_libraryName,true);
 		createTypeMetatable(l,null, typeof(QuickUnity.SymbolWidget),typeof(UnityEngine.MonoBehaviour));
 	}

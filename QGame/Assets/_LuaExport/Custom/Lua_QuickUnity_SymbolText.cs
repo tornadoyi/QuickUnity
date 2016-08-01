@@ -48,20 +48,6 @@ public class Lua_QuickUnity_SymbolText : LuaObject {
 		}
 	}
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static public int SetText(IntPtr l) {
-		try {
-			QuickUnity.SymbolText self=(QuickUnity.SymbolText)checkSelf(l);
-			System.String a1;
-			checkType(l,2,out a1);
-			self.SetText(a1);
-			pushValue(l,true);
-			return 1;
-		}
-		catch(Exception e) {
-			return error(l,e);
-		}
-	}
-	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
 	static public int get_text(IntPtr l) {
 		try {
 			QuickUnity.SymbolText self=(QuickUnity.SymbolText)checkSelf(l);
@@ -116,7 +102,6 @@ public class Lua_QuickUnity_SymbolText : LuaObject {
 	static public void reg(IntPtr l) {
 		getTypeTable(l,"QuickUnity.SymbolText");
 		addMember(l,SetSymbolText);
-		addMember(l,SetText);
 		addMember(l,"text",get_text,set_text,true);
 		addMember(l,"symbolText",get_symbolText,set_symbolText,true);
 		createTypeMetatable(l,constructor, typeof(QuickUnity.SymbolText),typeof(QuickUnity.SymbolWidget));

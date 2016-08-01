@@ -6,10 +6,6 @@ namespace QuickUnity
     [DisallowMultipleComponent]
     public class SymbolWidget : MonoBehaviour
     {
-        protected virtual string GetLibraryName() { return string.Empty; }
-
-        public virtual IEnumerator WaitForDone() { yield break; }
-
         public string libraryName
         {
             get
@@ -20,6 +16,16 @@ namespace QuickUnity
             set { _libraryName = value; }
         }
         private string _libraryName = string.Empty;
+
+
+        public virtual IEnumerator WaitForDone() { yield break; }
+
+        public void UpdateSymbol() { OnUpdateSymbol(); }
+
+        protected virtual string GetLibraryName() { return string.Empty; }
+
+        protected virtual void OnUpdateSymbol() {  }
+
 
     }
 }

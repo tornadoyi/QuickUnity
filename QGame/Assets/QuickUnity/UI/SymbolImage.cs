@@ -8,6 +8,11 @@ namespace QuickUnity
     [RequireComponent(typeof(Image))]
     public class SymbolImage : SymbolWidget
     {
+        public Image image;
+        public string symbolImage;
+        public bool loadFinishEnable = true;
+        protected CustomTask loadTask { get; set; }
+
         protected virtual void Awake()
         {
             if (image == null)
@@ -16,46 +21,45 @@ namespace QuickUnity
                 if (image == null) return;
             }
 
-            SetSymbolImageAsync(symbolImage);
+            SetSymbolImage(symbolImage);
         }
 
-        protected override string GetLibraryName() { return QConfig.Symbol.assetLibrary; }
 
-        public override IEnumerator WaitForDone()
+        public Task SetSymbolImage(string symbol) { return SetSymbolImage(libraryName, symbol); }
+
+        public Task SetSymbolImage(string libName, string symbol)
         {
-            if (co_load == null) yield break;
-            yield return co_load;
-        }
+            this.libraryName = libName;
+            this.symbolImage = symbol;
 
-        public void SetSymbolImageAsync(string symbol) { SetSymbolImageAsync(libraryName, symbol); }
-
-        public void SetSymbolImageAsync(string libName, string symbol) { SetSymbolImageAsync(libName, symbol, null); }
-
-        public void SetSymbolImageAsync(string libName, string symbol, QEventHandler callback)
-        {
             string[] images = SymbolManager.Translates(libName, symbol);
             string name = images.Length > 0 ? images[0] : null;
             string subName = images.Length > 1 ? images[1] : null;
-            SetImageAsync(name, subName, callback);
+            return SetImage(name, subName);
         }
 
-        public void SetImageAsync(string name) { SetImageAsync(name, null, null); }
+        public Task SetImage(string name) { return SetImage(name, null); }
 
-        public void SetImageAsync(string name, QEventHandler callback) { SetImageAsync(name, null, callback); }
-
-        public void SetImageAsync(string name, string subName) { SetImageAsync(name, subName, null); }
-
-        public void SetImageAsync(string name, string subName, QEventHandler callback)
+        public Task SetImage(string name, string subName)
         {
-            if(co_load != null) StopCoroutine(co_load);
-            co_load = StartCoroutine(Load(name, subName, () => {
-                co_load = null;
-                if (callback != null) callback.Invoke();
-            }));
+            if (loadTask != null) return loadTask;
+            loadTask = new CustomTask();
+            StartCoroutine(Load(name, subName));
+            return loadTask;
         }
 
-        protected IEnumerator Load(string name, string subName, QEventHandler callback)
+
+        protected override string GetLibraryName() { return QConfig.Symbol.assetLibrary; }
+
+        protected override void OnUpdateSymbol()
         {
+            SetSymbolImage(symbolImage);
+        }
+
+
+        protected IEnumerator Load(string name, string subName)
+        {
+            string error = string.Empty;
             do
             {
                 if (string.IsNullOrEmpty(name)) break;
@@ -82,16 +86,26 @@ namespace QuickUnity
                     image.sprite = task.sprite;
                     if (loadFinishEnable) image.enabled = true;
                 }
+                else
+                {
+                    error = task.error;
+                }
 
             } while (false);
 
-            if (callback != null) callback.Invoke();
+            var t = loadTask;
+            loadTask = null;
+            if (string.IsNullOrEmpty(error))
+            {
+                t.SetFail(error);
+            }
+            else
+            {
+                t.SetSuccess();
+            }
         }
 
-        public Image image;
-        public string symbolImage;
-        public bool loadFinishEnable = true;
-        protected Coroutine co_load;
+        
     }
 }
 

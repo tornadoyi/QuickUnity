@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-
+using QuickUnity;
 public class StartPage : MonoBehaviour {
 
     bool changeLanguage = false;
@@ -46,7 +46,8 @@ public class StartPage : MonoBehaviour {
         Language.SwitchLanguage(nextLanguage).Finish((_)=> 
         {
             changeLanguage = false;
-            initializer.Restart();
+            SymbolManager.NotifyUpdateSymbols();
+            //initializer.Restart();
         });
     }
 }
