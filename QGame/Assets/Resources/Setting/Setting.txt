@@ -5,9 +5,9 @@
 login_server_url : tcp://122.0.71.87:6666
 #login_server_url : tcp://10.130.149.14:6666
 
-#cdn_url: http://210.242.242.69:8089
+cdn_url: http://210.242.242.69:8089
 #cdn_url: http://dev46.happyelements.net:8011/TestCDN
-cdn_url: file://D:/QuickUnity/ci/publish
+#cdn_url: file://D:/QuickUnity/ci/publish
 #cdn_url: file:///Users/Jason/Work/QuickUnity/ci/publish
 
 app_version: v0.1
